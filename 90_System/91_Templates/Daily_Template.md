@@ -17,20 +17,47 @@ function md(x){ // escape Markdown safely
   return String(x ?? "—").replace(re, "\\$1");
 }
 
+function slugify(input){
+  return (
+    String(input || "")
+      .toLowerCase()
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9а-яё]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-|-$/g, '')
+  ) || 'item';
+}
+
+async function ensureFolder(folderPath) {
+  const norm = String(folderPath || "").replace(/\\/g, "/");
+  if (!norm) return;
+  if (app.vault.getAbstractFileByPath(norm)) return;
+  const parts = norm.split("/");
+  let acc = "";
+  for (const p of parts) {
+    if (!p) continue;
+    acc = acc ? `${acc}/${p}` : p;
+    if (!app.vault.getAbstractFileByPath(acc)) {
+      try { await app.vault.createFolder(acc); } catch (e) {}
+    }
+  }
+}
+
 // Return folder path ANM will use for a given money type
 function targetFolderFor(type){
   const map = {
-    expense:    "60_Finance/69_Inbox/69.1_Finance_note/Purchase",
-    income:     "60_Finance/69_Inbox/69.1_Finance_note/Income",
-    transfer:   "60_Finance/69_Inbox/69.1_Finance_note/Transfer",
-    sinking:    "60_Finance/69_Inbox/69.1_Finance_note/Savings",
-    invest_buy: "60_Finance/69_Inbox/69.1_Finance_note/Invest_Buy",
-    invest_sell:"60_Finance/69_Inbox/69.1_Finance_note/Invest_Sell",
-    divint:     "60_Finance/69_Inbox/69.1_Finance_note/Dividend",
-    tax:        "60_Finance/69_Inbox/69.1_Finance_note/Tax",
-    fee:        "60_Finance/69_Inbox/69.1_Finance_note/Fee",
-    refund:     "60_Finance/69_Inbox/69.1_Finance_note/Refund",
-    other:      "60_Finance/69_Inbox/69.1_Finance_note/Other"
+    expense:    "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Purchase",
+    income:     "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Income",
+    transfer:   "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Transfer",
+    sinking:    "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Savings",
+    invest_buy: "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Invest_Buy",
+    invest_sell:"30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Invest_Sell",
+    divint:     "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Dividend",
+    tax:        "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Tax",
+    fee:        "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Fee",
+    refund:     "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Refund",
+    other:      "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Other"
   };
   return map[type] || map.other;
 }
@@ -60,8 +87,8 @@ const nowTimeSafe = tp.date.now("HH-mm"); // Windows-safe, minutes granularity
 
 // ---------- Main choice ----------
 const choice = await tp.system.suggester(
-  ["⚡ Быстрая задача","💵 Деньги","🤝 Делегировать","📚 Знания"],
-  ["quick","money","delegate","knowledge"],
+  ["⚡ Быстрая задача","💵 Деньги","🤝 Делегировать","📚 Знания","🩺 Здоровье","🏃 Тренировка / Бег","🌿 Привычка / Помодоро","🎬 Медиа","📘 Библиотека","🗂 Документ"],
+  ["quick","money","delegate","knowledge","health","workout","habit","media","library","document"],
   false,
   "Что создать?"
 );
@@ -78,21 +105,7 @@ let fm = { title: "", type: "", tags: [] };
 
 // ---------- KNOWLEDGE ----------
 if (choice === "knowledge") {
-  // create folder tree if not exists
-  async function ensureFolder(folderPath) {
-    const norm = String(folderPath || "").replace(/\\/g, "/");
-    if (app.vault.getAbstractFileByPath(norm)) return;
-    const parts = norm.split("/");
-    let acc = "";
-    for (const p of parts) {
-      if (!p) continue;
-      acc = acc ? `${acc}/${p}` : p;
-      if (!app.vault.getAbstractFileByPath(acc)) {
-        try { await app.vault.createFolder(acc); } catch (e) {}
-      }
-    }
-  }
-  const ROOT = "50_Knowledge/59_Inbox/59.1_ZK";
+  const ROOT = "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK";
   const KR = (p) => `${ROOT}/${p}`;
 
   // Map from item key to RU tag (second tag)
@@ -401,7 +414,7 @@ if (choice === "knowledge") {
   H1 = ""; // без дубля заголовка
   fm.title = unique;
   fm.type  = "knowledge";
-  fm.tags  = ["knowledge", TAG[k.key] || k.tagCat]; // simplified tags
+  fm.tags  = ['knowledge', `knowledge/${k.key}`, TAG[k.key] || k.tagCat]; // tags for routing + human label
 
   // body
   body += [
@@ -414,11 +427,12 @@ if (choice === "knowledge") {
 
 // ---------- QUICK ----------
 else if (choice === "quick") {
+  const TASK_FOLDER = "20_Journal/22_Tasks/22.1_GTD";
+  await ensureFolder(TASK_FOLDER);
   const baseTitle = `Быстрая задача ${nowDate} ${nowTimeSafe}`;
-  // Для быстрых задач проверим уникальность в текущей папке
-  const folder = tp.file.folder(true); // absolute path relative to vault
-  finalTitle = await ensureUniqueTitle(folder, baseTitle);
+  finalTitle = await ensureUniqueTitle(TASK_FOLDER, baseTitle);
   try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.move(`${TASK_FOLDER}/${finalTitle}`); } catch(e) {}
   H1 = `# ${finalTitle}`;
   fm.title = finalTitle;
   fm.type = "task";
@@ -665,10 +679,12 @@ else if (choice === "money") {
 
 // ---------- DELEGATE ----------
 else if (choice === "delegate") {
+  const DELEGATE_FOLDER = "20_Journal/22_Tasks/22.2_Delegation";
+  await ensureFolder(DELEGATE_FOLDER);
   const baseTitle = `Делегирование ${nowDate} ${nowTimeSafe}`;
-  const folder = tp.file.folder(true);
-  finalTitle = await ensureUniqueTitle(folder, baseTitle);
+  finalTitle = await ensureUniqueTitle(DELEGATE_FOLDER, baseTitle);
   try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.move(`${DELEGATE_FOLDER}/${finalTitle}`); } catch(e) {}
   H1 = `# ${finalTitle}`;
   fm.title = finalTitle;
   fm.type = "delegate";
@@ -702,6 +718,258 @@ else if (choice === "delegate") {
     `- [ ] ${md(task)} → **${md(to)}**${due}`,
     ""
   ].join("\n");
+}
+
+
+// ---------- HEALTH ----------
+else if (choice === "health") {
+  const modes = [
+    { key: 'analysis', label: '🧪 Анализ', folder: '30_Areas/34_Health/34.1_Records/Analyses', tag: 'analysis' },
+    { key: 'doctor', label: '🩺 Визит к врачу', folder: '30_Areas/34_Health/34.1_Records/Doctor_Notes', tag: 'doctor' },
+    { key: 'diagnostic', label: '🩻 Диагностика', folder: '30_Areas/34_Health/34.1_Records/Diagnostics', tag: 'diagnostic' }
+  ];
+  const chosen = await tp.system.suggester(modes.map(m => m.label), modes, false, 'Что записать?') || modes[0];
+  await ensureFolder(chosen.folder);
+  const baseTitle = `${chosen.label.replace(/^[^\w]+\s*/, '')} ${nowDate} ${nowTimeSafe}`;
+  finalTitle = await ensureUniqueTitle(chosen.folder, baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.move(`${chosen.folder}/${finalTitle}`); } catch(e) {}
+  H1 = `# ${finalTitle}`;
+  fm.title = finalTitle;
+  fm.type = 'health';
+  fm.tags = ['health', `health/${chosen.tag}`];
+
+  const date = await tp.system.prompt('Дата события', tp.date.now('YYYY-MM-DD'));
+  const place = await tp.system.prompt('Клиника / лаборатория', '');
+  const doctor = chosen.key === 'doctor' ? await tp.system.prompt('Врач / специалист', '') : '';
+  const follow = chosen.key === 'doctor' ? await tp.system.prompt('Контроль / следующий визит', '') : '';
+  const summary = await tp.system.prompt('Краткое описание', '');
+
+  body += [
+    `> [!info] ${chosen.label}`,
+    `- Дата: **${date || nowDate}**`,
+    `- Место: **${md(place || '-') }**`,
+    chosen.key === 'doctor' ? `- Врач: **${md(doctor || '-') }**` : '',
+    chosen.key === 'doctor' && follow ? `- Контроль: **${md(follow)}**` : '',
+    summary ? `- Итог: **${md(summary)}**` : '',
+    '',
+    '## 📑 Детали',
+    '',
+    '## ✅ Рекомендации',
+    '',
+    '## 🔗 Связанные заметки',
+    ''
+  ].filter(Boolean).join("\n");
+}
+
+// ---------- WORKOUT / RUN ----------
+else if (choice === 'workout') {
+  const modes = [
+    { key: 'workout', label: '🏋️ Тренировка', folder: '30_Areas/34_Health/34.2_Fitness/Workouts', tag: 'workout' },
+    { key: 'run', label: '🏃 Бег', folder: '30_Areas/34_Health/34.2_Fitness/Runs', tag: 'run' }
+  ];
+  const chosen = await tp.system.suggester(modes.map(m => m.label), modes, false, 'Тип активности') || modes[0];
+  await ensureFolder(chosen.folder);
+  const baseTitle = `${chosen.label.replace(/^[^\w]+\s*/, '')} ${nowDate} ${nowTimeSafe}`;
+  finalTitle = await ensureUniqueTitle(chosen.folder, baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.move(`${chosen.folder}/${finalTitle}`); } catch(e) {}
+  H1 = `# ${finalTitle}`;
+  fm.title = finalTitle;
+  fm.type = chosen.key;
+  fm.tags = ['fitness', `fitness/${chosen.tag}`];
+
+  const date = await tp.system.prompt('Дата', tp.date.now('YYYY-MM-DD'));
+  const duration = await tp.system.prompt('Длительность (мин)', '45');
+  const intensity = await tp.system.prompt('Интенсивность / зона', '');
+  const distance = chosen.key === 'run' ? await tp.system.prompt('Дистанция (км)', '5') : '';
+  const pace = chosen.key === 'run' ? await tp.system.prompt('Пейс (мин/км)', '') : '';
+  const notes = await tp.system.prompt('Комментарий', '');
+
+  body += [
+    `> [!tip] ${chosen.label}`,
+    `- Дата: **${date || nowDate}**`,
+    `- Длительность: **${md(duration || '-') } мин**`,
+    intensity ? `- Интенсивность: **${md(intensity)}**` : '',
+    chosen.key === 'run' && distance ? `- Дистанция: **${md(distance)} км**` : '',
+    chosen.key === 'run' && pace ? `- Пейс: **${md(pace)}**` : '',
+    '',
+    '## 📝 Заметки',
+    notes || '',
+    '',
+    '## 📊 Метрики',
+    '- Пульс: ',
+    '- Нагрузка: ',
+    ''
+  ].filter(Boolean).join("\n");
+}
+
+// ---------- HABIT LOG ----------
+else if (choice === 'habit') {
+  const HABIT_FOLDER = '30_Areas/35_Habits/35.1_Log';
+  await ensureFolder(HABIT_FOLDER);
+  const habitName = await tp.system.prompt('Название привычки / активности', '');
+  const habitSlug = slugify(habitName);
+  const baseTitle = `${habitName || 'Привычка'} ${nowDate} ${nowTimeSafe}`;
+  finalTitle = await ensureUniqueTitle(HABIT_FOLDER, baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.move(`${HABIT_FOLDER}/${finalTitle}`); } catch(e) {}
+  H1 = `# ${finalTitle}`;
+  fm.title = finalTitle;
+  fm.type = 'habit';
+  fm.tags = ['habit/log', `habit/${habitSlug}`];
+
+  const date = await tp.system.prompt('Дата', tp.date.now('YYYY-MM-DD'));
+  const count = await tp.system.prompt('Количество повторов', '1');
+  const minutes = await tp.system.prompt('Минуты (если применимо)', '25');
+  const mood = await tp.system.prompt('Самочувствие / настроение', '');
+  const note = await tp.system.prompt('Заметка', '');
+
+  body += [
+    '## 🌿 Привычка',
+    `- Название: **${md(habitName || 'Без названия')}**`,
+    `- Дата: **${date || nowDate}**`,
+    `- Повторов: **${md(count || '0')}**`,
+    minutes ? `- Минуты: **${md(minutes)}**` : '',
+    mood ? `- Настроение: **${md(mood)}**` : '',
+    '',
+    '## 📝 Заметки',
+    note || '',
+    '',
+    '## 🔁 Следующий шаг',
+    '- '
+  ].filter(Boolean).join("\n");
+}
+
+// ---------- MEDIA ----------
+else if (choice === 'media') {
+  const modes = [
+    { key: 'music', label: '🎧 Музыка', folder: '40_Resources/43_Media/43.1_Music', type: 'music' },
+    { key: 'movie', label: '🎞 Фильм', folder: '40_Resources/43_Media/43.2_Movies', type: 'movie' },
+    { key: 'series', label: '📺 Сериал', folder: '40_Resources/43_Media/43.3_Series', type: 'series' },
+    { key: 'playlist', label: '▶️ Плейлист', folder: '40_Resources/43_Media/43.4_Playlists', type: 'playlist' }
+  ];
+  const chosen = await tp.system.suggester(modes.map(m => m.label), modes, false, 'Что добавить?') || modes[0];
+  await ensureFolder(chosen.folder);
+  const baseTitle = `${chosen.label.replace(/^[^\w]+\s*/, '')} ${nowDate} ${nowTimeSafe}`;
+  finalTitle = await ensureUniqueTitle(chosen.folder, baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.move(`${chosen.folder}/${finalTitle}`); } catch(e) {}
+  H1 = `# ${finalTitle}`;
+  fm.title = finalTitle;
+  fm.type = chosen.type;
+  fm.tags = ['media', `media/${chosen.key}`];
+
+  const title = await tp.system.prompt('Название / альбом', '');
+  const author = await tp.system.prompt('Исполнитель / режиссёр', '');
+  const year = await tp.system.prompt('Год', tp.date.now('YYYY'));
+  const rating = await tp.system.prompt('Оценка (0-10)', '');
+  const status = await tp.system.suggester(['planned','in progress','done'], ['planned','in progress','done'], false, 'Статус просмотра?') || 'planned';
+  const review = await tp.system.prompt('Отзыв / впечатление', '');
+
+  body += [
+    '## 📋 Карточка',
+    `- Название: **${md(title || finalTitle)}**`,
+    `- Автор/Исполнитель: **${md(author || '-')}**`,
+    `- Год: **${md(year || '-')}**`,
+    rating ? `- Оценка: **${md(rating)}**` : '',
+    status ? `- Статус: **${status}**` : '',
+    '',
+    '## 💬 Отзыв',
+    review || '',
+    '',
+    '## 📃 Трек-лист / эпизоды',
+    '- ',
+    '',
+    '## 🔗 Ссылки',
+    '- '
+  ].filter(Boolean).join("\n");
+}
+
+// ---------- LIBRARY ----------
+else if (choice === 'library') {
+  const LIB_ROOT = '40_Resources/42_Library/42.1_Inbox';
+  const kinds = {
+    book:    { label: 'Книга',    folder: LIB_ROOT + '/Books',    type: 'book' },
+    article: { label: 'Статья',   folder: LIB_ROOT + '/Articles', type: 'article' },
+    note:    { label: 'Конспект', folder: LIB_ROOT + '/Notes',    type: 'library-note' },
+  };
+  const kind = await tp.system.suggester(['Книга','Статья','Конспект'], ['book','article','note'], false, 'Тип материала?') || 'book';
+  const target = kinds[kind] || kinds.book;
+  await ensureFolder(target.folder);
+  const baseTitle = `${target.label} ${nowDate} ${nowTimeSafe}`;
+  finalTitle = await ensureUniqueTitle(target.folder, baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.move(`${target.folder}/${finalTitle}`); } catch(e) {}
+  H1 = `# ${finalTitle}`;
+  fm.title = finalTitle;
+  fm.type = target.type;
+  fm.tags = ['library', `library/${kind}`];
+
+  const title = await tp.system.prompt('Название', '');
+  const author = await tp.system.prompt('Автор(ы)', '');
+  const year = await tp.system.prompt('Год', tp.date.now('YYYY'));
+  const status = await tp.system.suggester(['planned','reading','finished'], ['planned','reading','finished'], false, 'Статус чтения?') || 'planned';
+  const rating = await tp.system.prompt('Оценка (0-10)', '');
+  const summary = await tp.system.prompt('Кратко о содержании', '');
+
+  body += [
+    '## 📚 Библиографические данные',
+    `- Название: **${md(title || finalTitle)}**`,
+    `- Автор: **${md(author || '-') }**`,
+    `- Год: **${md(year || '-') }**`,
+    `- Статус: **${status}**`,
+    rating ? `- Оценка: **${md(rating)}**` : '',
+    '',
+    '## 📝 Конспект / заметки',
+    summary || '',
+    '',
+    '## 💡 Идеи',
+    '- ',
+    '',
+    '## 🔗 Ссылки',
+    '- '
+  ].filter(Boolean).join("\n");
+}
+
+// ---------- DOCUMENT ----------
+else if (choice === 'document') {
+  const modes = [
+    { key: 'passport', label: '🪪 Паспорт', folder: '50_Personal/51_Documents/Passports' },
+    { key: 'agreement', label: '📄 Договор / доверенность', folder: '50_Personal/51_Documents/Agreements' },
+    { key: 'certificate', label: '📜 Свидетельство / полис', folder: '50_Personal/51_Documents/Certificates' },
+    { key: 'archive', label: '📦 Архив / прочее', folder: '50_Personal/52_Archive' }
+  ];
+  const chosen = await tp.system.suggester(modes.map(m => m.label), modes, false, 'Тип документа?') || modes[0];
+  await ensureFolder(chosen.folder);
+  const baseTitle = `${chosen.label.replace(/^[^\w]+\s*/, '')} ${nowDate} ${nowTimeSafe}`;
+  finalTitle = await ensureUniqueTitle(chosen.folder, baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.move(`${chosen.folder}/${finalTitle}`); } catch(e) {}
+  H1 = `# ${finalTitle}`;
+  fm.title = finalTitle;
+  fm.type = 'document';
+  fm.tags = ['documents', `documents/${chosen.key}`];
+
+  const docNumber = await tp.system.prompt('Номер / серия', '');
+  const issue = await tp.system.prompt('Дата выдачи', tp.date.now('YYYY-MM-DD'));
+  const expire = await tp.system.prompt('Срок действия', '');
+  const issuer = await tp.system.prompt('Кем выдан', '');
+  const notes = await tp.system.prompt('Примечания', '');
+
+  body += [
+    '## 🗂 Реквизиты',
+    docNumber ? `- Номер: **${md(docNumber)}**` : '',
+    issue ? `- Выдан: **${md(issue)}**` : '',
+    expire ? `- Действителен до: **${md(expire)}**` : '',
+    issuer ? `- Орган: **${md(issuer)}**` : '',
+    '',
+    '## 📝 Комментарии',
+    notes || '',
+    '',
+    '## 🔍 Напоминания',
+    '- Проверить перед истечением срока.'
+  ].filter(Boolean).join("\n");
 }
 
 // ---------- Compose Frontmatter + Header (with visible tags) ----------
