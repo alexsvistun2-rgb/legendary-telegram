@@ -1,0 +1,7 @@
+echo "# legend-telegram" >> README.md 
+git init 
+git add README.md 
+git commit -m "первый коммит" 
+git branch -M main 
+git remote add origin https://github.com/alexsvistun2-rgb/legendary-telegram.git
+ git push -u origin main
