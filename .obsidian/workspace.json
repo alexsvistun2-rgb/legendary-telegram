@@ -1,0 +1,289 @@
+{
+  "main": {
+    "id": "5324373015726ba8",
+    "type": "split",
+    "children": [
+      {
+        "id": "4509724f8bf84da7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e7a7b303c61786dc",
+            "type": "leaf",
+            "state": {
+              "type": "planner-release-notes",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "Day Planner Release 0.28.0"
+            }
+          },
+          {
+            "id": "5f9949d5dbc6867b",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "Быстрая задача 2025-10-09 15-28.md",
+                "mode": "preview",
+                "source": false,
+                "backlinks": false
+              },
+              "icon": "lucide-file",
+              "title": "Быстрая задача 2025-10-09 15-28"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "07f5667812a98989",
+    "type": "split",
+    "children": [
+      {
+        "id": "0a34e5a5859652e7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "f984d7589b4fd8f7",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Файловый менеджер"
+            }
+          },
+          {
+            "id": "04b1eea03f5b91eb",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": true,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Поиск"
+            }
+          },
+          {
+            "id": "18d49d0cc2af66db",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Закладки"
+            }
+          },
+          {
+            "id": "7a845ffed6a9bd95",
+            "type": "leaf",
+            "state": {
+              "type": "calendar",
+              "state": {},
+              "icon": "calendar-with-checkmark",
+              "title": "Calendar"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 251.5
+  },
+  "right": {
+    "id": "9a673b1b786e603a",
+    "type": "split",
+    "children": [
+      {
+        "id": "35322522e01bc7c8",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "c1fe65c95ada939a",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Быстрая задача 2025-10-09 15-28.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Обратные ссылки для Быстрая задача 2025-10-09 15-28"
+            }
+          },
+          {
+            "id": "bea52159d9c2a9ab",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "00_Templates/Template_Daily.md.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Исходящие ссылки из Template_Daily.md"
+            }
+          },
+          {
+            "id": "d65727ddd8a650e2",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Теги"
+            }
+          },
+          {
+            "id": "fba8f8362b0651bd",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Быстрая задача 2025-09-12 17-29.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Структура Быстрая задача 2025-09-12 17-29"
+            }
+          },
+          {
+            "id": "74960906b101cb10",
+            "type": "leaf",
+            "state": {
+              "type": "reminder-list",
+              "state": {},
+              "icon": "clock",
+              "title": "Reminders"
+            }
+          },
+          {
+            "id": "fe912312f45adb6c",
+            "type": "leaf",
+            "state": {
+              "type": "advanced-tables-toolbar",
+              "state": {},
+              "icon": "spreadsheet",
+              "title": "Advanced Tables"
+            }
+          },
+          {
+            "id": "20d1cd78fed852e2",
+            "type": "leaf",
+            "state": {
+              "type": "planner-timeline",
+              "state": {},
+              "icon": "calendar-with-checkmark",
+              "title": "Timeline"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 605.5,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "media-extended:Open external media": false,
+      "switcher:Меню быстрого перехода": false,
+      "graph:Граф": false,
+      "canvas:Создать новый холст": false,
+      "daily-notes:Сегодняшняя заметка": false,
+      "templates:Вставить шаблон": false,
+      "command-palette:Открыть палитру команд": false,
+      "markdown-importer:Импорт Markdown-файлов": false,
+      "bases:Создать новую базу": false,
+      "obsidian-excalidraw-plugin:Создать новый чертеж": false,
+      "iconic:Открыть свод правил": false,
+      "obsidian-kanban:Создать новую доску": false,
+      "templater-obsidian:Templater": false,
+      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "homepage:Open homepage": false,
+      "ledger-obsidian:Add to Ledger": false,
+      "obsidian-book-search-plugin:Create new book note": false,
+      "omnisearch:Omnisearch": false,
+      "periodic-notes:Open this week": false,
+      "card-board:CardBoard": false,
+      "obsidian-day-planner:Open Timeline": false,
+      "obsidian-day-planner:Open Multi-Day View": false
+    }
+  },
+  "active": "5f9949d5dbc6867b",
+  "lastOpenFiles": [
+    "__rar_9296.43837",
+    "__rar_11332.43374",
+    "obsidian.rar",
+    "WinRAR archive.rar",
+    "Без названия.md",
+    "80_Archive",
+    "30_Areas",
+    "20_Projects",
+    "10_Incoming",
+    "Быстрая задача 2025-10-09 15-28.md",
+    "1. Причина смерти....md",
+    "как зазаз....md",
+    "00_Dashboards/💼 Finance — Единая доска (фильтр → графики → таблица).md",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Income/Доход 2025-09-26 20-42.md",
+    "00_Dashboards/Home.md.md",
+    "90_System/91_Templates/Daily_Template.md",
+    "{....md",
+    "111.md",
+    "222.md",
+    "Быстрая задача 2025-09-26 21-01 (3).md",
+    "Быстрая задача 2025-09-26 21-01 (2).md",
+    "Быстрая задача 2025-09-26 21-01.md",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-59.md",
+    "~syncthing~222.md.tmp",
+    "40_Resources/59_Inbox/59.1_ZK/Lectures/Лекция — Английский — 202509262055.md",
+    "00_Dashboards/Knowledge_Home.md",
+    "40_Resources/59_Inbox/59.1_ZK/Literature/Books/Книга — Прыжок с крыши — 202509262050.md",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-42.md",
+    "50_Knowledge/59_Inbox/59.1_ZK/Literature/Books/Книга — 2025-09-26 20-50 — 202509262050.md",
+    "Заметка 2025-09-26 20-44.md",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-39.md",
+    "всуа.md",
+    "Делегирование 2025-09-26 20-38.md",
+    "Быстрая задача 2025-09-26 20-36.md",
+    "~syncthing~Без названия.md.tmp",
+    "60_Finance/69_Inbox/69.1_Finance_note/Purchase/~syncthing~Покупка 2025-09-25 22-43.md.tmp",
+    "unnamed.png",
+    "Pasted image 20250912132448.png",
+    "Pasted image 20250912132433.png",
+    "Z9RwbziBA97Gigdd_S&Pquote.avif",
+    "Без названия.canvas",
+    "Pasted Image 20250908205244_239.png",
+    "90_System/92_File/Pasted image 20250217203020 1.png",
+    "90_System/92_File/Pasted image 20250222184949.png",
+    "90_System/92_File/Pasted image 20250217203020.png",
+    "90_System/92_File/Pasted image 20250217111412.png",
+    "90_System/92_File/Pasted image 20250217111805.png"
+  ]
+}

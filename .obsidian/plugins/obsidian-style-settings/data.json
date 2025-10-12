@@ -1,0 +1,17 @@
+{
+  "retroma-obsidian-theme@@window-border-radius": "18px",
+  "retroma-obsidian-theme@@button-border-radius": "24px",
+  "retroma-obsidian-theme@@rotation-2": 289,
+  "retroma-obsidian-theme@@rotation-1": 271,
+  "retroma-obsidian-theme@@chroma": 0.149,
+  "retroma-obsidian-theme@@chroma-folder": 0.184,
+  "retroma-obsidian-theme@@h1-color@@light": "#E62E3C",
+  "retroma-obsidian-theme@@h2-color@@light": "#8F7911",
+  "retroma-obsidian-theme@@h3-color@@light": "#12BC93",
+  "retroma-obsidian-theme@@text-normal@@light": "#000000",
+  "retroma-obsidian-theme@@text-muted@@light": "#8C500C",
+  "retroma-obsidian-theme@@text-faint@@light": "#919383",
+  "retroma-obsidian-theme@@bold-color@@light": "#000000",
+  "retroma-obsidian-theme@@italic-color@@light": "#22385C",
+  "retroma-obsidian-theme@@strong-emphasis@@light": "#000000"
+}

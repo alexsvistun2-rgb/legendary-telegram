@@ -1,0 +1,222 @@
+{
+  "main": {
+    "id": "5324373015726ba8",
+    "type": "split",
+    "children": [
+      {
+        "id": "4509724f8bf84da7",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "e7a7b303c61786dc",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "Новая вкладка"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "8647a3d6e8c2e79b",
+    "type": "mobile-drawer",
+    "children": [
+      {
+        "id": "04a842f9b8177cf4",
+        "type": "leaf",
+        "state": {
+          "type": "file-explorer",
+          "state": {
+            "sortOrder": "alphabetical",
+            "autoReveal": false
+          },
+          "icon": "lucide-folder-closed",
+          "title": "Файловый менеджер"
+        }
+      },
+      {
+        "id": "787e2aea632dded6",
+        "type": "leaf",
+        "state": {
+          "type": "search",
+          "state": {
+            "query": "",
+            "matchingCase": false,
+            "explainSearch": false,
+            "collapseAll": false,
+            "extraContext": false,
+            "sortOrder": "alphabetical"
+          },
+          "icon": "lucide-search",
+          "title": "Поиск"
+        }
+      },
+      {
+        "id": "2373b9e5ec36c46e",
+        "type": "leaf",
+        "state": {
+          "type": "tag",
+          "state": {
+            "sortOrder": "frequency",
+            "useHierarchy": true,
+            "showSearch": false,
+            "searchQuery": ""
+          },
+          "icon": "lucide-tags",
+          "title": "Теги"
+        }
+      },
+      {
+        "id": "9caa37a58808db9e",
+        "type": "leaf",
+        "state": {
+          "type": "bookmarks",
+          "state": {},
+          "icon": "lucide-bookmark",
+          "title": "Закладки"
+        }
+      }
+    ],
+    "currentTab": 0
+  },
+  "right": {
+    "id": "71ffde0a436f847c",
+    "type": "mobile-drawer",
+    "children": [
+      {
+        "id": "8bfdb13b2f77dd0f",
+        "type": "leaf",
+        "state": {
+          "type": "backlink",
+          "state": {
+            "collapseAll": false,
+            "extraContext": false,
+            "sortOrder": "alphabetical",
+            "showSearch": true,
+            "searchQuery": "",
+            "backlinkCollapsed": false,
+            "unlinkedCollapsed": true
+          },
+          "icon": "links-coming-in",
+          "title": "Обратные ссылки"
+        }
+      },
+      {
+        "id": "4692ab569ee8d899",
+        "type": "leaf",
+        "state": {
+          "type": "outgoing-link",
+          "state": {
+            "file": "Быстрая задача 2025-09-25 22-14.md",
+            "linksCollapsed": false,
+            "unlinkedCollapsed": true
+          },
+          "icon": "links-going-out",
+          "title": "Исходящие ссылки"
+        }
+      },
+      {
+        "id": "9e2d7918c6fc80a0",
+        "type": "leaf",
+        "state": {
+          "type": "outline",
+          "state": {
+            "file": "Быстрая задача 2025-09-25 22-14.md",
+            "followCursor": false,
+            "showSearch": false,
+            "searchQuery": ""
+          },
+          "icon": "lucide-list",
+          "title": "Структура"
+        }
+      },
+      {
+        "id": "ade329fbcf6692a7",
+        "type": "leaf",
+        "state": {
+          "type": "calendar",
+          "state": {},
+          "icon": "lucide-file",
+          "title": "Плагин больше не активен"
+        }
+      },
+      {
+        "id": "5dae0d670cf794cd",
+        "type": "leaf",
+        "state": {
+          "type": "reminder-list",
+          "state": {},
+          "icon": "lucide-file",
+          "title": "Плагин больше не активен"
+        }
+      }
+    ],
+    "currentTab": 0
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Меню быстрого перехода": false,
+      "graph:Граф": false,
+      "canvas:Создать новый холст": false,
+      "daily-notes:Сегодняшняя заметка": false,
+      "templates:Вставить шаблон": false,
+      "command-palette:Открыть палитру команд": false,
+      "markdown-importer:Импорт Markdown-файлов": false,
+      "table-editor-obsidian:Advanced Tables Toolbar": false,
+      "obsidian-excalidraw-plugin:Создать новый чертеж": false,
+      "iconic:Открыть свод правил": false,
+      "obsidian-kanban:Создать новую доску": false,
+      "templater-obsidian:Templater": false,
+      "homepage:Open homepage": false,
+      "ledger-obsidian:Add to Ledger": false,
+      "obsidian-book-search-plugin:Create new book note": false,
+      "omnisearch:Omnisearch": false,
+      "periodic-notes:Open this week": false,
+      "card-board:CardBoard": false
+    }
+  },
+  "active": "04a842f9b8177cf4",
+  "lastOpenFiles": [
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-42.md",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-39.md",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-59.md",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Income/Доход 2025-09-26 20-42.md",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Transfer",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Tax",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Savings",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Refund",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Purchase",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Other",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Invest_Sell",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Invest_Buy",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Income",
+    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Fee",
+    "40_Resources/59_Inbox/59.1_ZK/Literature/Books/Книга — Прыжок с крыши — 202509262050.md",
+    "40_Resources/59_Inbox/59.1_ZK/Lectures/Лекция — Английский — 202509262055.md",
+    "Без названия.md",
+    "1. Причина смерти....md",
+    "Быстрая задача 2025-10-09 15-28.md",
+    "60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-59.md",
+    "222.md",
+    "111.md",
+    "60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-42.md",
+    "50_Knowledge/59_Inbox/59.1_ZK/Literature/Books/Книга — Прыжок с крыши — 202509262050.md",
+    "60_Finance/69_Inbox/69.1_Finance_note/Income/Доход 2025-09-26 20-42.md",
+    "60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-39.md",
+    "50_Knowledge/59_Inbox/59.1_ZK/Lectures/Лекция — Английский — 202509262055.md",
+    "60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-25 22-44.md",
+    "60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-25 22-43.md",
+    "60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-25 19-11.md",
+    "Untitled.md",
+    "wefrewrferrrrrrrrrrrrr.md",
+    "1111111111.md",
+    "Без назв22222ания.md",
+    "Untitled.md",
+    "jkhguf....md"
+  ]
+}

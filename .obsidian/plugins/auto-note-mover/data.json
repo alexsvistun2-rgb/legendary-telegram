@@ -1,0 +1,63 @@
+{
+  "trigger_auto_manual": "Automatic",
+  "use_regex_to_check_for_tags": false,
+  "statusBar_trigger_indicator": true,
+  "folder_tag_pattern": [
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Purchase",
+      "tag": "#type/purchase",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Income",
+      "tag": "#type/income",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Transfer",
+      "tag": "#type/transfer",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Savings",
+      "tag": "#type/savings",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Invest_Buy",
+      "tag": "#type/invest_buy",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Invest_Sell",
+      "tag": "#type/invest_sell",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Dividend",
+      "tag": "#type/dividend",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Tax",
+      "tag": "#type/tax",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Fee",
+      "tag": "#type/fee",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Refund",
+      "tag": "#type/refund",
+      "pattern": ""
+    }
+  ],
+  "use_regex_to_check_for_excluded_folder": false,
+  "excluded_folder": [
+    {
+      "folder": "00_Templates"
+    }
+  ]
+}

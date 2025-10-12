@@ -1,0 +1,13 @@
+{
+  "theme": "moonstone",
+  "showRibbon": true,
+  "showViewHeader": true,
+  "enabledCssSnippets": [
+    "finance-dashboard",
+    "dashboard",
+    "finance-dashboard-beauty",
+    "MCL Multi Column"
+  ],
+  "cssTheme": "Retroma",
+  "accentColor": "#bd954b"
+}

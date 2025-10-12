@@ -1,0 +1,9 @@
+{
+  "promptDelete": false,
+  "defaultViewMode": "preview",
+  "livePreview": true,
+  "newFileLocation": "folder",
+  "newFileFolderPath": "10_Inbox",
+  "propertiesInDocument": "hidden",
+  "readableLineLength": false
+}
