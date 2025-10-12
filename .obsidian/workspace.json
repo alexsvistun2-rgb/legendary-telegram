@@ -11,13 +11,29 @@
             "id": "e7a7b303c61786dc",
             "type": "leaf",
             "state": {
-              "type": "empty",
+              "type": "mx-welcome",
               "state": {},
+              "icon": "home",
+              "title": "Media Extended onboarding"
+            }
+          },
+          {
+            "id": "d1ca085c5588c10c",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "222.md",
+                "mode": "source",
+                "source": false,
+                "backlinks": false
+              },
               "icon": "lucide-file",
-              "title": "Новая вкладка"
+              "title": "222"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -217,11 +233,15 @@
       "obsidian-day-planner:Open Timeline": false,
       "obsidian-day-planner:Open Multi-Day View": false,
       "periodic-notes:Open this week": false,
-      "card-board:CardBoard": false
+      "card-board:CardBoard": false,
+      "obsidian-git:Open Git source control": false
     }
   },
   "active": "f984d7589b4fd8f7",
   "lastOpenFiles": [
+    "222.md",
+    "111.md",
+    "Покупка 2025-10-12 19-45.md",
     "Доход 2025-10-12 19-37.md",
     "Доход 2025-10-12 19-35.md",
     "Доход 2025-10-12 19-28.md",
@@ -233,7 +253,6 @@
     "__rar_11332.43374",
     "obsidian.rar",
     "WinRAR archive.rar",
-    "Без названия.md",
     "80_Archive",
     "30_Areas",
     "20_Projects",
@@ -257,8 +276,6 @@
     "40_Resources/59_Inbox/59.1_ZK/Literature/Books/Книга — Прыжок с крыши — 202509262050.md",
     "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-42.md",
     "50_Knowledge/59_Inbox/59.1_ZK/Literature/Books/Книга — 2025-09-26 20-50 — 202509262050.md",
-    "Заметка 2025-09-26 20-44.md",
-    "30_Areas/60_Finance/69_Inbox/69.1_Finance_note/Purchase/Покупка 2025-09-26 20-39.md",
     "unnamed.png",
     "Pasted image 20250912132448.png",
     "Pasted image 20250912132433.png",
