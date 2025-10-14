@@ -1,0 +1,159 @@
+/* Dashboard enhancements */
+.finance-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin-block: 12px 24px;
+}
+.finance-card {
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--color-accent)15%, var(--background-secondary)) ;
+  color: var(--text-normal);
+  box-shadow: 0 12px 32px rgba(0,0,0,0.12);
+  position: relative;
+  overflow: hidden;
+}
+.finance-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top right, rgba(255,255,255,0.25), transparent 55%);
+  pointer-events: none;
+}
+.finance-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  opacity: .75;
+}
+.finance-card .value {
+  font-size: 1.9rem;
+  font-weight: 700;
+}
+.finance-card small {
+  display: block;
+  opacity: .7;
+  margin-top: 6px;
+}
+.finance-charts,
+.finance-subgrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 18px;
+  margin: 0 0 28px;
+}
+.finance-charts > div,
+.finance-subgrid > div {
+  background: var(--background-secondary);
+  border-radius: 18px;
+  padding: 16px 18px 12px;
+  box-shadow: var(--shadow-l); /* requires theme variable */
+  border: 1px solid var(--background-modifier-border);
+}
+.finance-charts h4,
+.finance-subgrid h4 {
+  margin: 0 0 12px;
+  font-size: 1rem;
+  letter-spacing: .02em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+.finance-goals {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin: 8px 0 24px;
+}
+.finance-goals .goal {
+  border-radius: 14px;
+  padding: 14px 16px 18px;
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: var(--shadow-s);
+}
+.finance-goals .goal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  gap: 12px;
+}
+.finance-goals .progress-bar {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: var(--background-modifier-border);
+  overflow: hidden;
+}
+.finance-goals .progress-bar span {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--color-green), var(--color-accent));
+}
+.finance-table {
+  background: var(--background-secondary);
+  border-radius: 18px;
+  padding: 12px;
+  box-shadow: var(--shadow-l);
+  border: 1px solid var(--background-modifier-border);
+}
+.finance-table .tabulator-header {
+  background: transparent;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+.finance-table .tabulator-row.tabulator-group {
+  background: var(--background-secondary-alt);
+  font-weight: 600;
+}
+.finance-table .tabulator-cell {
+  border-right: none;
+}
+.finance-table .positive { color: var(--color-green); font-weight: 600; }
+.finance-table .negative { color: var(--color-red); font-weight: 600; }
+.finance-table .neutral { color: var(--text-muted); }
+
+.card-board-view {
+  --card-gap: 18px;
+  --card-border-radius: 18px;
+  padding: 12px 8px 32px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.05), transparent 65%);
+}
+.card-board-view .column-header {
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  padding-bottom: 10px;
+}
+.card-board-view .column {
+  backdrop-filter: blur(6px);
+  border-radius: 20px;
+  padding: 12px 10px 16px;
+  background: rgba(40,40,60,0.08);
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 18px 28px rgba(15,15,35,0.12);
+}
+.card-board-view .task-card {
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: var(--background-primary);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: 0 10px 22px rgba(0,0,0,0.1);
+}
+.card-board-view .task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+}
+.card-board-view .task-card .tags a.tag {
+  border-radius: 999px;
+  padding: 0 8px;
+  font-size: 0.75rem;
+}
+
+.multi-column > .callout {
+  border-radius: 20px;
+  padding: 16px;
+}

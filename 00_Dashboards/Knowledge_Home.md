@@ -2,13 +2,11 @@
 tags: [dashboard, knowledge]
 ---
 
-
-
 ```dataviewjs
 const root = this.container.createDiv();
 Object.assign(root.style, {
   display: "grid",
-  gridTemplateColumns: "minmax(0,1fr) minmax(0,1fr)",
+  gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
   gap: "16px"
 });
 
@@ -20,36 +18,25 @@ function section(title, full=false){
   return sec;
 }
 
-function tableSimple(parent, pages, {limit=20, includeLinks=false} = {}) {
+function renderTable(parent, pages, {limit=20, includeLinks=false} = {}) {
   const list = pages.sort(p => p.file.mtime, "desc").limit(limit);
   const rows = list.map(p => includeLinks
     ? [p.file.link, (p.file.inlinks?.length ?? 0), (p.file.outlinks?.length ?? 0), p.file.mtime]
     : [p.file.link, p.file.mtime]
   );
   dv.container = parent;
-  if (includeLinks) dv.table(["File","In","Out","Updated"], rows);
-  else dv.table(["File","Updated"], rows);
+  if (includeLinks) dv.table(["Заметка","Входящие","Исходящие","Обновлено"], rows);
+  else dv.table(["Заметка","Обновлено"], rows);
 }
 
-const ROOT = "50_Knowledge/59_Inbox/59.1_ZK";
-
-// keep: Последние, Автор/Личность, Fleeting, Книги, Цитаты
-tableSimple(section("Последние заметки"), dv.pages('"' + ROOT + '"'));
-tableSimple(section("Автор/Личность"), dv.pages('"' + ROOT + '/Authors"'));
-tableSimple(section("Fleeting"), dv.pages('"' + ROOT + '/Fleeting"'));
-
-// Книги = Books + E-books (Literature/Books + Literature/E-books)
-const books = dv.pages('"' + ROOT + '/Literature/Books"');
-const ebooks = dv.pages('"' + ROOT + '/Literature/E-books"');
-tableSimple(section("Книги"), books.concat(ebooks));
-
-tableSimple(section("Цитаты"), dv.pages('"' + ROOT + '/Literature/Quotes"'));
-
-// add: Questions
-tableSimple(section("Questions"), dv.pages('"' + ROOT + '/Questions"'));
-
-// bottom full-width: 0–2 links
-const fewLinks = dv.pages('"' + ROOT + '"')
-  .where(p => ((p.file.inlinks?.length ?? 0) + (p.file.outlinks?.length ?? 0)) <= 2);
-tableSimple(section("Заметки без связей (0–2 ссылки)", true), fewLinks, {limit: 30, includeLinks: true});
+const ROOT = "50_Knowledge/51_ZK";
+renderTable(section("Последние заметки"), dv.pages(`"${ROOT}"`));
+renderTable(section("MOC / карты"), dv.pages(`"${ROOT}/51.1_MOCs"`));
+renderTable(section("Постоянные"), dv.pages(`"${ROOT}/51.2_Permanent"`));
+renderTable(section("Мимолётные"), dv.pages(`"${ROOT}/51.3_Fleeting"`));
+renderTable(section("Литература"), dv.pages(`"${ROOT}/51.2_Permanent/Literature"`));
+renderTable(section("Вопросы"), dv.pages(`"${ROOT}/51.3_Fleeting/Questions"`));
+renderTable(section("Источники"), dv.pages(`"${ROOT}/51.2_Permanent/Sources"`));
+renderTable(section("Инструменты"), dv.pages(`"${ROOT}/51.2_Permanent/Tools"`));
+renderTable(section("Связей < 3", true), dv.pages(`"${ROOT}"`).where(p => ((p.file.inlinks?.length ?? 0) + (p.file.outlinks?.length ?? 0)) <= 2), {limit: 40, includeLinks:true});
 ```
