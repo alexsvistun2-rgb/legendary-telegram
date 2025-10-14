@@ -4,411 +4,562 @@ cssClass: dashboard
 
 # 💼 Finance — Единая доска (фильтр → графики → таблица)
 
-> Папка фиксирована: **60_Finance**.  
-> Сверху — **фильтр периода**, ниже — **графики** (читают `window.financeRows()`), внизу — **таблица‑источник** (самообновляющаяся).
+> Папка данных: **30_Areas/33_Finance**. Сверху — **фильтр периода**, ниже — **аналитика** (графики, накопления, инвестиции), внизу — **таблицы**.
 
-## Служебные скрипты (Chart.js + плагины + helper)
+## 0) Служебные скрипты (Chart.js, плагины, Tabulator, helper)
 ```dataviewjs
-(async function(){
-  async function loadOnce(url, isReady){
-    try{ if(isReady()) return; }catch(_){}
-    await new Promise(function(res,rej){
-      var s=document.createElement('script'); s.src=url; s.async=true;
-      s.onload=res; s.onerror=function(){ rej(new Error('Load fail '+url)); };
-      document.head.appendChild(s);
-    });
-  }
-  function hasChart(){ try{ return !!window.Chart; }catch(_){ return false; } }
-  function hasCtrl(name){ try{ return !!(Chart && Chart.controllers && Chart.controllers[name]); }catch(_){ return false; } }
-  await loadOnce('https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js', hasChart);
-  await loadOnce('https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.0.0/dist/chartjs-chart-matrix.min.js', function(){ return hasCtrl('matrix'); });
-  await loadOnce('https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.14.0/dist/chartjs-chart-sankey.min.js', function(){ return hasCtrl('sankey'); });
-  await loadOnce('https://cdn.jsdelivr.net/npm/chartjs-chart-hierarchy@2.0.1/dist/chartjs-chart-hierarchy.min.js', function(){ return !!Chart.registry.getScale('category'); });
-  await loadOnce('https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.0/dist/chartjs-chart-treemap.min.js', function(){ return hasCtrl('treemap'); });
-  if(!window.renderChart){
-    window.renderChart = function(cfg, mount){
-      var holder = mount || document.createElement('div');
-      holder.style.width = '100%';
-      holder.style.minHeight = (cfg._height || 280) + 'px';
-      var canvas = document.createElement('canvas');
-      holder.appendChild(canvas);
-      var ctx = canvas.getContext('2d');
-      cfg.options = cfg.options || {};
-      cfg.options.maintainAspectRatio = false;
-      cfg.options.responsive = true;
-      cfg.options.plugins = cfg.options.plugins || {};
-      cfg.options.plugins.legend = cfg.options.plugins.legend || { display: true };
-      new Chart(ctx, cfg);
-      return holder;
-    };
-  }
-})();
+await dv.view('90_System/92_File/Views/finance-bootstrap');
 ```
 
-## 0) Фильтр периода (КЛЮЧ `finance_range2`)
+## 1) Фильтр периода (ключ `finance_range2`)
 ```dataviewjs
 (()=>{
-  const KEYR = 'finance_range2';
-  const root = dv.el('div',''); root.style.display='grid'; root.style.gap='8px';
-
-  const get = ()=>{ try{ const r=localStorage.getItem(KEYR); return r?JSON.parse(r):{mode:'all'}; }catch(_){ return {mode:'all'}; } };
-  const set = (patch)=>{
-    const merged = Object.assign(get(), patch||{});
-    localStorage.setItem(KEYR, JSON.stringify(merged));
-    window.dispatchEvent(new CustomEvent('finance-range-changed'));
+  const KEY = 'finance_range2';
+  const root = dv.el('div','');
+  root.className = 'finance-filter';
+  const store = {
+    load(){ try { const raw = localStorage.getItem(KEY); return raw?JSON.parse(raw):{mode:'month'}; } catch(_) { return {mode:'month'}; } },
+    save(patch){
+      const val = Object.assign(store.load(), patch||{});
+      localStorage.setItem(KEY, JSON.stringify(val));
+      if (window.dispatchFinanceRangeChanged) {
+        window.dispatchFinanceRangeChanged();
+      }
+    }
   };
-
-  const cfg = get();
-  function row(label){ const r=document.createElement('div'); r.style.display='flex'; r.style.gap='8px'; r.style.alignItems='center'; r.append(Object.assign(document.createElement('strong'),{textContent:label+':'})); root.append(r); return r; }
-
-  const rMode = row('Режим');
-  const mode = document.createElement('select');
+  const cfg = store.load();
+  function row(label){ const r=document.createElement('div'); r.className='finance-filter-row'; r.append(Object.assign(document.createElement('span'),{textContent:label})); root.append(r); return r; }
+  const selRow = row('Режим');
+  const select = document.createElement('select');
   [['all','Всё'],['day','День'],['week','Неделя'],['month','Месяц'],['quarter','Квартал'],['year','Год'],['range','Диапазон']]
-    .forEach(([v,t])=>{ const o=document.createElement('option'); o.value=v; o.textContent=t; if(cfg.mode===v) o.selected=true; mode.appendChild(o); });
-  rMode.append(mode);
-
-  const rDay=row('День');   const d=document.createElement('input'); d.type='date';  d.value=cfg.day||'';  rDay.append(d);
-  const rW=row('Неделя');   const w=document.createElement('input'); w.type='week';  w.value=cfg.week||''; rW.append(w);
-  const rM=row('Месяц');    const m=document.createElement('input'); m.type='month'; m.value=cfg.month||'';rM.append(m);
-  const rQ=row('Квартал');  const qy=document.createElement('input'); qy.type='number'; qy.placeholder='YYYY'; qy.value=cfg.qyear||'';
-                            const q=document.createElement('select'); ['1','2','3','4'].forEach(n=>{ const o=document.createElement('option'); o.value=n; o.textContent=['I','II','III','IV'][n-1]; if(String(cfg.quarter||'')===n) o.selected=true; q.append(o); });
-                            rQ.append(qy,q);
-  const rY=row('Год');      const y=document.createElement('input'); y.type='number'; y.placeholder='YYYY'; y.value=cfg.year||''; rY.append(y);
-  const rR=row('Диапазон'); const s=document.createElement('input'); s.type='date'; s.value=cfg.start||''; const e=document.createElement('input'); e.type='date'; e.value=cfg.end||''; rR.append(s,document.createTextNode('—'),e);
-
-  function show(){ const v=mode.value; rDay.style.display=v==='day'?'flex':'none'; rW.style.display=v==='week'?'flex':'none'; rM.style.display=v==='month'?'flex':'none'; rQ.style.display=v==='quarter'?'flex':'none'; rY.style.display=v==='year'?'flex':'none'; rR.style.display=v==='range'?'flex':'none'; }
-  mode.addEventListener('change', ()=>{ set({mode:mode.value, day:null, week:null, month:null, qyear:null, quarter:null, year:null, start:null, end:null}); show(); });
-  [d,w,m,qy,q,y,s,e].forEach(el=> el.addEventListener('change', ()=>{
-    let out={ mode: mode.value, day:d.value||null, week:w.value||null, month:m.value||null, qyear:qy.value||null, quarter:Number(q.value||1), year:y.value||null, start:s.value||null, end:e.value||null };
+    .forEach(([v,t])=>{ const o=document.createElement('option'); o.value=v; o.textContent=t; if(cfg.mode===v) o.selected=true; select.append(o); });
+  selRow.append(select);
+  const dateRow = row('Дата'); const day = Object.assign(document.createElement('input'),{type:'date', value:cfg.day||''}); dateRow.append(day);
+  const weekRow = row('Неделя'); const week = Object.assign(document.createElement('input'),{type:'week', value:cfg.week||''}); weekRow.append(week);
+  const monthRow = row('Месяц'); const month = Object.assign(document.createElement('input'),{type:'month', value:cfg.month||''}); monthRow.append(month);
+  const quarterRow = row('Квартал'); const qYear = Object.assign(document.createElement('input'),{type:'number', placeholder:'YYYY', value:cfg.qyear||''}); const qSel=document.createElement('select'); ['1','2','3','4'].forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=['I','II','III','IV'][n-1];if(String(cfg.quarter||1)===n) o.selected=true;qSel.append(o);}); quarterRow.append(qYear,qSel);
+  const yearRow = row('Год'); const year = Object.assign(document.createElement('input'),{type:'number', placeholder:'YYYY', value:cfg.year||''}); yearRow.append(year);
+  const rangeRow = row('Диапазон'); const start = Object.assign(document.createElement('input'),{type:'date', value:cfg.start||''}); const end = Object.assign(document.createElement('input'),{type:'date', value:cfg.end||''}); rangeRow.append(start, document.createTextNode(' — '), end);
+  function sync(){ const mode=select.value; dateRow.style.display=mode==='day'?'flex':'none'; weekRow.style.display=mode==='week'?'flex':'none'; monthRow.style.display=mode==='month'?'flex':'none'; quarterRow.style.display=mode==='quarter'?'flex':'none'; yearRow.style.display=mode==='year'?'flex':'none'; rangeRow.style.display=mode==='range'?'flex':'none'; }
+  select.addEventListener('change', ()=>{ store.save({mode:select.value, day:null,week:null,month:null,qyear:null,quarter:1,year:null,start:null,end:null}); sync(); });
+  [day,week,month,qYear,qSel,year,start,end].forEach(el => el.addEventListener('change', ()=>{
+    const out={ mode:select.value, day:day.value||null, week:week.value||null, month:month.value||null, qyear:qYear.value||null, quarter:Number(qSel.value||1), year:year.value||null, start:start.value||null, end:end.value||null };
     if(out.mode==='range' && out.start && out.end && out.start>out.end){ const t=out.start; out.start=out.end; out.end=t; }
-    set(out);
+    store.save(out);
   }));
-  show();
+  sync();
 })();
 ```
 
-## 1) Общий провайдер данных (экспортирует `window.financeRows()`)
+## 2) Провайдер данных (`window.financeRows()` + helpers)
 ```dataviewjs
-(() => {
-  function cfg(){ const r=localStorage.getItem('finance_range2'); return (r&&r[0]==='{'&&r.at(-1)==='}')?JSON.parse(r):{mode:'all'}; }
-  function rng(){
-    const c=cfg(), now=moment().endOf('day');
-    if(!c.mode || c.mode==='all') return {s:moment('1900-01-01'), e:now};
-    if(c.mode==='day'    && c.day   ){ const d=moment(c.day,'YYYY-MM-DD'); return {s:d.clone().startOf('day'), e:d.clone().endOf('day')}; }
-    if(c.mode==='week'   && c.week  ){ const w=moment(c.week+'-1','GGGG-[W]WW-E'); return {s:w.clone().startOf('isoWeek'), e:w.clone().endOf('isoWeek')}; }
-    if(c.mode==='month'  && c.month ){ const m=moment(c.month,'YYYY-MM'); return {s:m.clone().startOf('month'), e:m.clone().endOf('month')}; }
-    if(c.mode==='quarter'&& c.qyear ){ const q=Number(c.quarter||1), y=Number(c.qyear); const m=moment({year:y, month:(q-1)*3, day:1}); return {s:m.clone().startOf('quarter'), e:m.clone().endOf('quarter')}; }
-    if(c.mode==='year'   && c.year  ){ const y=Number(c.year); const m=moment({year:y, month:0, day:1}); return {s:m.clone().startOf('year'), e:m.clone().endOf('year')}; }
-    if(c.mode==='range'             ){ let s=c.start?moment(c.start,'YYYY-MM-DD').startOf('day'):moment('1900-01-01'); let e=c.end?moment(c.end,'YYYY-MM-DD').endOf('day'):now; if(e.isBefore(s)){ const t=s;s=e;e=t; } return {s,e}; }
+(async ()=>{
+  await dv.view('90_System/92_File/Views/finance-bootstrap');
+  function readConfig(){
+    try { const raw = localStorage.getItem('finance_range2'); return raw?JSON.parse(raw):{mode:'month'}; } catch(_) { return {mode:'month'}; }
+  }
+  function computeRange(){
+    const cfg = readConfig();
+    const now = moment().endOf('day');
+    if(!cfg.mode || cfg.mode==='all') return {s: moment('1900-01-01'), e: now};
+    if(cfg.mode==='day' && cfg.day){ const d=moment(cfg.day,'YYYY-MM-DD'); return {s:d.clone().startOf('day'), e:d.clone().endOf('day')}; }
+    if(cfg.mode==='week' && cfg.week){ const w=moment(cfg.week+'-1','GGGG-[W]WW-E'); return {s:w.clone().startOf('isoWeek'), e:w.clone().endOf('isoWeek')}; }
+    if(cfg.mode==='month' && cfg.month){ const m=moment(cfg.month,'YYYY-MM'); return {s:m.clone().startOf('month'), e:m.clone().endOf('month')}; }
+    if(cfg.mode==='quarter' && cfg.qyear){ const q=Number(cfg.quarter||1); const y=Number(cfg.qyear); const m=moment({year:y, month:(q-1)*3, day:1}); return {s:m.clone().startOf('quarter'), e:m.clone().endOf('quarter')}; }
+    if(cfg.mode==='year' && cfg.year){ const y=Number(cfg.year); const m=moment({year:y, month:0, day:1}); return {s:m.clone().startOf('year'), e:m.clone().endOf('year')}; }
+    if(cfg.mode==='range'){ const s=cfg.start?moment(cfg.start,'YYYY-MM-DD').startOf('day'):moment('1900-01-01'); const e=cfg.end?moment(cfg.end,'YYYY-MM-DD').endOf('day'):now; return e.isBefore(s)?{s:e,e:s}:{s,e}; }
     return {s:moment('1900-01-01'), e:now};
   }
-  const R=rng();
-  window.financeCurrentRange = () => ({from:R.s.format('YYYY-MM-DD'), to:R.e.format('YYYY-MM-DD')});
-
-  // Собираем все строки из 60_Finance, потом фильтруем по диапазону
-  if(!window.financeAllRows){
-    window.financeAllRows = async () => {
-      const rows=[], pages=dv.pages('"60_Finance"');
-      for (const p of pages){
-        const txt=await dv.io.load(p.file.path);
-        const dm=(txt.match(/-\s*Дата:\s*\*{0,2}(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2}))?/i)||[]);
-        const dt=dm[1]? moment(dm[1]+(dm[2]?(' '+dm[2]):''), ['YYYY-MM-DD HH:mm','YYYY-MM-DD']) : moment(p.file.ctime);
-        if(!dt.isValid()) continue;
-        const date=dt.format('YYYY-MM-DD'), time=dt.format('HH:mm');
-        function g(re){ const m=(txt.match(re)||[]); return (m[1]||'').trim(); }
-        const amt=((txt.match(/-\s*Сумма:\s*\*{0,2}([\d\s.,+-]+)/i)||[])[1]||'').replace(/\s+/g,'').replace(',','.');
-        rows.push([date, g(/#type\/([A-Za-z_]+)/g), amt||'', g(/-\s*Категория:\s*\*{0,2}([^\n*]+)/i),
-                   g(/-\s*Подкатегория:\s*\*{0,2}([^\n*]+)/i), g(/-\s*Источник:\s*\*{0,2}([^\n*]+)/i),
-                   g(/-\s*Откуда:\s*\*{0,2}([^\n*]+)/i), g(/-\s*Куда:\s*\*{0,2}([^\n*]+)/i),
-                   g(/-\s*Сч[её]т:\s*\*{0,2}([^\n*]+)/i), g(/-\s*(?:Актив|Тикер):\s*\*{0,2}([^\n*]+)/i),
-                   g(/-\s*Кол-во[^:]*:\s*\*{0,2}([^\n*]+)/i), g(/-\s*Цена[^:]*:\s*\*{0,2}([^\n*]+)/i), p.file.link]);
-      }
-      rows.sort((a,b)=>a[0].localeCompare(b[0])||String(a[1]).localeCompare(String(b[1])));
-      return rows;
-    };
+  async function loadAll(){
+    if(window.__financeAllCache) return window.__financeAllCache;
+    const pages = dv.pages('"30_Areas/33_Finance"');
+    const rows=[];
+    for(const page of pages){
+      if(!page.file || !page.file.path.endsWith('.md')) continue;
+      const txt = await dv.io.load(page.file.path);
+      const dm = txt.match(/-\s*Дата:\s*\*{0,2}(\d{4}-\d{2}-\d{2})(?:\s+(\d{2}:\d{2}))?/i);
+      const dt = dm ? moment(dm[1]+(dm[2]?(' '+dm[2]):''), ['YYYY-MM-DD HH:mm','YYYY-MM-DD']) : moment(page.file.ctime);
+      if(!dt.isValid()) continue;
+      const num = (txt.match(/-\s*Сумма:\s*\*{0,2}([-+\d\s.,]+)/i)||[])[1]||'0';
+      const amount = Number(num.replace(/\s+/g,'').replace(',','.')) || 0;
+      function grab(re){ const m = txt.match(re); return m?m[1].trim():''; }
+      const item = {
+        date: dt.format('YYYY-MM-DD'),
+        time: dt.format('HH:mm'),
+        type: (txt.match(/#type\/([\w_-]+)/)||[])[1] || (page.type||'other'),
+        amount,
+        category: grab(/-\s*Категория:\s*\*{0,2}([^\n*]+)/i),
+        subcategory: grab(/-\s*Подкатегория:\s*\*{0,2}([^\n*]+)/i),
+        source: grab(/-\s*Источник:\s*\*{0,2}([^\n*]+)/i),
+        from: grab(/-\s*Откуда:\s*\*{0,2}([^\n*]+)/i),
+        to: grab(/-\s*Куда:\s*\*{0,2}([^\n*]+)/i),
+        account: grab(/-\s*Сч[её]т:\s*\*{0,2}([^\n*]+)/i),
+        asset: grab(/-\s*(?:Актив|Тикер):\s*\*{0,2}([^\n*]+)/i),
+        quantity: grab(/-\s*Кол-во[^:]*:\s*\*{0,2}([^\n*]+)/i),
+        price: grab(/-\s*Цена[^:]*:\s*\*{0,2}([^\n*]+)/i),
+        tags: page.file?.tags || [],
+        link: page.file.link
+      };
+      item.direction = window.financeIN.test(item.type) ? 'in' : 'out';
+      item.absAmount = Math.abs(item.amount);
+      item.signed = item.direction==='in' ? Math.abs(item.amount) : -Math.abs(item.amount || 0);
+      rows.push(item);
+    }
+    rows.sort((a,b)=> a.date.localeCompare(b.date) || a.type.localeCompare(b.type));
+    window.__financeAllCache = rows;
+    return rows;
   }
+  window.financeCurrentRange = () => {
+    const r = computeRange();
+    return { from: r.s.format('YYYY-MM-DD'), to: r.e.format('YYYY-MM-DD') };
+  };
+  window.financeAllRows = loadAll;
   window.financeRows = async () => {
-    const rows = await window.financeAllRows(), out=[], r=rng();
-    for (const rr of rows){ const m=moment(rr[0],'YYYY-MM-DD'); if(m.isBefore(r.s)||m.isAfter(r.e)) continue; out.push(rr); }
-    return out;
+    const rows = await loadAll();
+    const r = computeRange();
+    return rows.filter(row => {
+      const d = moment(row.date,'YYYY-MM-DD');
+      return !d.isBefore(r.s) && !d.isAfter(r.e);
+    });
+  };
+  window.financeRowsDetailed = window.financeRows;
+  window.financeRegister = (fn) => {
+    if(typeof fn === 'function' && !window.financeListeners.includes(fn)){
+      window.financeListeners.push(fn);
+    }
   };
 })();
 ```
 
-# 2) Быстрая аналитика
+## 3) Быстрый обзор
+```dataviewjs
+(async function(){
+  await dv.view('90_System/92_File/Views/finance-bootstrap');
+  const mount = dv.el('div','');
+  mount.className = 'finance-summary-grid';
+  async function render(){
+    const rows = await window.financeRows();
+    const IN = window.financeIN;
+    let income=0, expense=0;
+    const byCat = {};
+    const byDay = {};
+    rows.forEach(r => {
+      const amt = Math.abs(Number(r.amount||0));
+      if(IN.test(r.type)) income += amt; else expense += amt;
+      const day = r.date;
+      if(!byDay[day]) byDay[day]=0;
+      byDay[day] += IN.test(r.type)?amt:-amt;
+      if(!byCat[r.category||'—']) byCat[r.category||'—']=0;
+      if(!IN.test(r.type)) byCat[r.category||'—'] += amt;
+    });
+    const net = income - expense;
+    const avgDaily = rows.length ? (income+expense)/(Object.keys(byDay).length||1) : 0;
+    const worstCat = Object.entries(byCat).sort((a,b)=>b[1]-a[1])[0];
+    const cards = [
+      {label:'Доходы', value: income, accent:'#2ecc71'},
+      {label:'Расходы', value: expense, accent:'#e74c3c'},
+      {label:'Net', value: net, accent: net>=0?'#3498db':'#d35400'},
+      {label:'Средний оборот/день', value: avgDaily, accent:'#9b59b6', format:'currency', helper:'(доходы+расходы)/день'},
+    ];
+    if(worstCat){ cards.push({label:`Топ расход: ${worstCat[0]}`, value: worstCat[1], accent:'#c0392b'}); }
+    mount.innerHTML='';
+    cards.forEach(card => {
+      const el=document.createElement('div'); el.className='finance-summary-card'; el.style.setProperty('--accent',card.accent);
+      const value = card.format==='currency'?card.value:`${card.value}`;
+      el.innerHTML=`<header>${card.label}</header><strong>${Number(value).toLocaleString('ru-RU',{minimumFractionDigits:2, maximumFractionDigits:2})} ₽</strong>${card.helper?`<span>${card.helper}</span>`:''}`;
+      mount.append(el);
+    });
+  }
+  await render();
+  window.financeRegister(render);
+})();
+```
+
+## 4) Динамика потоков
+> [!multi-column]
+>
+>> [!info] Net по дням + MA7/MA30
+>> ```dataviewjs
+>> (async function(){
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount = dv.el('div','');
+>>   mount.style.height='320px';
+>>   async function render(){
+>>     const rows = await window.financeRows();
+>>     const byDay={};
+>>     rows.forEach(r=>{
+>>       const day=r.date; if(!byDay[day]) byDay[day]={in:0,out:0};
+>>       const amt=Math.abs(Number(r.amount||0));
+>>       if(window.financeIN.test(r.type)) byDay[day].in+=amt; else byDay[day].out+=amt;
+>>     });
+>>     const labels=Object.keys(byDay).sort();
+>>     const inc=labels.map(d=>+byDay[d].in.toFixed(2));
+>>     const exp=labels.map(d=>+byDay[d].out.toFixed(2));
+>>     const net=labels.map((_,i)=>+(inc[i]-exp[i]).toFixed(2));
+>>     function ma(arr,w){ return arr.map((_,i)=>{ const slice=arr.slice(Math.max(0,i-w+1),i+1); const sum=slice.reduce((a,b)=>a+b,0); return +(sum/slice.length).toFixed(2); }); }
+>>     const ma7=ma(net,7), ma30=ma(net,30);
+>>     const cfg={
+>>       type:'line',
+>>       data:{labels,datasets:[
+>>         {label:'Доходы',data:inc,borderColor:'#2ecc71',backgroundColor:'rgba(46,204,113,0.2)',fill:false,tension:.35},
+>>         {label:'Расходы',data:exp,borderColor:'#e74c3c',backgroundColor:'rgba(231,76,60,0.2)',fill:false,tension:.35},
+>>         {label:'Net',data:net,borderColor:'#3498db',backgroundColor:'rgba(52,152,219,0.25)',fill:true,tension:.35},
+>>         {label:'MA7',data:ma7,borderColor:'#9b59b6',borderDash:[6,4],fill:false},
+>>         {label:'MA30',data:ma30,borderColor:'#95a5a6',borderDash:[3,6],fill:false}
+>>       ]},
+>>       options:{scales:{y:{ticks:{callback:v=>v.toLocaleString('ru-RU')}}}}
+>>     };
+>>     window.financeRenderChart(cfg,mount);
+>>   }
+>>   await render();
+>>   window.financeRegister(render);
+>> })();
+>> ```
+>
+>> [!info] Доходы vs Расходы (месяцы)
+>> ```dataviewjs
+>> (async function(){
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount=dv.el('div',''); mount.style.height='320px';
+>>   async function render(){
+>>     const rows=await window.financeRows();
+>>     const byMonth={};
+>>     rows.forEach(r=>{
+>>       const key=r.date.slice(0,7); if(!byMonth[key]) byMonth[key]={in:0,out:0};
+>>       const amt=Math.abs(Number(r.amount||0));
+>>       if(window.financeIN.test(r.type)) byMonth[key].in+=amt; else byMonth[key].out+=amt;
+>>     });
+>>     const labels=Object.keys(byMonth).sort();
+>>     const inc=labels.map(m=>+byMonth[m].in.toFixed(2));
+>>     const exp=labels.map(m=>+byMonth[m].out.toFixed(2));
+>>     const cfg={type:'bar',data:{labels,datasets:[
+>>       {label:'Доходы',data:inc,backgroundColor:'rgba(46,204,113,0.7)'},
+>>       {label:'Расходы',data:exp,backgroundColor:'rgba(231,76,60,0.7)'}
+>>     ]},options:{plugins:{legend:{position:'bottom'}},scales:{y:{stacked:false,ticks:{callback:v=>v.toLocaleString('ru-RU')}}}}};
+>>     window.financeRenderChart(cfg,mount);
+>>   }
+>>   await render();
+>>   window.financeRegister(render);
+>> })();
+>> ```
+
+## 5) Структура расходов
+> [!multi-column]
+>
+>> [!warning] Категории (donut)
+>> ```dataviewjs
+>> (async function(){
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount=dv.el('div',''); mount.style.height='300px';
+>>   async function render(){
+>>     const rows=await window.financeRows();
+>>     const sums={};
+>>     rows.forEach(r=>{ if(window.financeIN.test(r.type)) return; const key=r.category||'—'; sums[key]=(sums[key]||0)+Math.abs(Number(r.amount||0)); });
+>>     const labels=Object.keys(sums).sort((a,b)=>sums[b]-sums[a]);
+>>     const data=labels.map(k=>+sums[k].toFixed(2));
+>>     const colors=labels.map((_,i)=>window.financeColor(i,0.85));
+>>     const cfg={type:'doughnut',data:{labels,datasets:[{data,backgroundColor:colors}]},options:{plugins:{tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed.toLocaleString('ru-RU',{minimumFractionDigits:2, maximumFractionDigits:2})} ₽`}}}}};
+>>     window.financeRenderChart(cfg,mount);
+>>   }
+>>   await render();
+>>   window.financeRegister(render);
+>> })();
+>> ```
+>
+>> [!warning] Treemap (Категория → Подкатегория)
+>> ```dataviewjs
+>> (async function(){
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount=dv.el('div',''); mount.style.height='300px';
+>>   async function render(){
+>>     const rows=await window.financeRows();
+>>     const nodes=[]; const totals={};
+>>     rows.forEach(r=>{
+>>       if(window.financeIN.test(r.type)) return;
+>>       const cat=r.category||'—'; const sub=r.subcategory||'—';
+>>       const val=Math.abs(Number(r.amount||0));
+>>       const id=`${cat} › ${sub}`;
+>>       totals[id]=(totals[id]||0)+val;
+>>     });
+>>     Object.entries(totals).forEach(([key,val],idx)=>{
+>>       nodes.push({value:+val.toFixed(2), label:key, backgroundColor:window.financeColor(idx,0.85)});
+>>     });
+>>     const cfg={type:'treemap',data:{datasets:[{tree:nodes,key:'value',labels:{display:true,formatter:(ctx)=>`${ctx.raw._data.label}\n${ctx.raw.v.toLocaleString('ru-RU',{maximumFractionDigits:0})}`}}]}};
+>>     window.financeRenderChart(cfg,mount);
+>>   }
+>>   await render();
+>>   window.financeRegister(render);
+>> })();
+>> ```
+
+## 6) Доходы и счета
+> [!multi-column]
+>
+>> [!success] Источники доходов
+>> ```dataviewjs
+>> (async function(){
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount=dv.el('div',''); mount.style.height='280px';
+>>   async function render(){
+>>     const rows=await window.financeRows();
+>>     const sums={};
+>>     rows.forEach(r=>{ if(!window.financeIN.test(r.type)) return; const key=r.source||r.account||'—'; sums[key]=(sums[key]||0)+Math.abs(Number(r.amount||0)); });
+>>     const entries=Object.entries(sums).sort((a,b)=>b[1]-a[1]);
+>>     const labels=entries.map(([k])=>k);
+>>     const data=entries.map(([,v])=>+v.toFixed(2));
+>>     const cfg={type:'bar',data:{labels,datasets:[{label:'Доход',data,backgroundColor:labels.map((_,i)=>window.financeColor(i,0.85))}]},options:{indexAxis:'y',scales:{x:{ticks:{callback:v=>v.toLocaleString('ru-RU')}}}}};
+>>     window.financeRenderChart(cfg,mount);
+>>   }
+>>   await render();
+>>   window.financeRegister(render);
+>> })();
+>> ```
+>
+>> [!success] Сальдо по месяцам
+>> ```dataviewjs
+>> (async function(){
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount=dv.el('div',''); mount.style.height='280px';
+>>   async function render(){
+>>     const rows=await window.financeRows();
+>>     const months={};
+>>     rows.forEach(r=>{
+>>       const m=r.date.slice(0,7); if(!months[m]) months[m]=0;
+>>       const amt=Math.abs(Number(r.amount||0));
+>>       months[m]+=window.financeIN.test(r.type)?amt:-amt;
+>>     });
+>>     const labels=Object.keys(months).sort();
+>>     let running=0; const data=labels.map(m=>{ running+=months[m]; return +running.toFixed(2); });
+>>     const cfg={type:'line',data:{labels,datasets:[{label:'Кумулятивный Net',data,borderColor:'#1abc9c',fill:false,tension:.3}]},options:{scales:{y:{ticks:{callback:v=>v.toLocaleString('ru-RU')}}}}};
+>>     window.financeRenderChart(cfg,mount);
+>>   }
+>>   await render();
+>>   window.financeRegister(render);
+>> })();
+>> ```
+
+## 7) Накопления и цели
+```dataviewjs
+(async function(){
+  await dv.view('90_System/92_File/Views/finance-bootstrap');
+  const mount=dv.el('div','');
+  mount.className='finance-savings-grid';
+  async function render(){
+    const rows=await window.financeRows();
+    const cfg=dv.page('30_Areas/33_Finance/33.2_Planning/Finance_Config');
+    const goals=(cfg?.savingsGoals||[]).map((g,idx)=>({
+      name:g.name||`Цель ${idx+1}`,
+      target:Number(g.target||0),
+      targetDate:g.targetDate||'',
+      description:g.description||'',
+      match:g.match||{},
+      color:g.color||window.financeColor(idx,0.85)
+    }));
+    function matches(goal,row){
+      const {field,value}=goal.match||{};
+      if(!field || !value) return (row.to||row.category||'').toLowerCase().includes(goal.name.toLowerCase());
+      const key = String(field).toLowerCase();
+      const val = String(value).toLowerCase();
+      const map = {category:row.category, subcategory:row.subcategory, to:row.to, from:row.from, account:row.account};
+      if(key==='tag'){ return (row.tags||[]).map(String).some(t=>t.toLowerCase().includes(val)); }
+      return String(map[key]||'').toLowerCase().includes(val);
+    }
+    const contributions={};
+    rows.forEach(r=>{
+      if(r.type!=='sinking') return;
+      goals.forEach(goal=>{ if(matches(goal,r)){ contributions[goal.name]=(contributions[goal.name]||0)+Math.abs(Number(r.amount||0)); } });
+    });
+    mount.innerHTML='';
+    goals.forEach(goal=>{
+      const current=contributions[goal.name]||0;
+      const progress = goal.target?Math.min(100,Math.round((current/goal.target)*100)):0;
+      const card=document.createElement('div'); card.className='finance-saving-card'; card.style.setProperty('--accent',goal.color);
+      card.innerHTML=`<header>${goal.name}${goal.targetDate?`<span>до ${goal.targetDate}</span>`:''}</header><div class="progress"><div style="width:${progress}%"></div></div><p>${current.toLocaleString('ru-RU',{minimumFractionDigits:0})} / ${goal.target?goal.target.toLocaleString('ru-RU'): '∞'} ₽</p>${goal.description?`<small>${goal.description}</small>`:''}`;
+      mount.append(card);
+    });
+  }
+  await render();
+  window.financeRegister(render);
+})();
+```
+
+## 8) Инвестиции и сложные потоки
+> [!multi-column]
+>
+>> [!tip] Инвестиции по тикерам
+>> ```dataviewjs
+>> (async function(){
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount=dv.el('div',''); mount.style.height='280px';
+>>   async function render(){
+>>     const rows=await window.financeRows();
+>>     const tickers={};
+>>     rows.forEach(r=>{
+>>       if(!/^invest_/.test(r.type)) return;
+>>       const key=r.asset||r.category||'—';
+>>       const sign=r.type==='invest_buy'?-1:1;
+>>       const amt=Math.abs(Number(r.amount||0))*sign;
+>>       tickers[key]=(tickers[key]||0)+amt;
+>>     });
+>>     const entries=Object.entries(tickers).sort((a,b)=>b[1]-a[1]);
+>>     const labels=entries.map(([k])=>k);
+>>     const data=entries.map(([,v])=>+v.toFixed(2));
+>>     const cfg={type:'bar',data:{labels,datasets:[{label:'Net инвестиции',data,backgroundColor:labels.map((_,i)=>window.financeColor(i,0.85))}]},options:{scales:{y:{ticks:{callback:v=>v.toLocaleString('ru-RU')}}}}};
+>>     window.financeRenderChart(cfg,mount);
+>>   }
+>>   await render();
+>>   window.financeRegister(render);
+>> })();
+>> ```
+>
+>> [!tip] Денежные потоки (Sankey)
+>> ```dataviewjs
+>> (async function(){
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount=dv.el('div',''); mount.style.height='280px';
+>>   async function render(){
+>>     const rows=await window.financeRows();
+>>     const flows={};
+>>     rows.forEach(r=>{
+>>       const from=(r.source||r.from||'—').trim();
+>>       const to=(r.category||r.to||'—').trim();
+>>       if(!from && !to) return;
+>>       const key=`${from}|${to}`;
+>>       flows[key]=(flows[key]||0)+Math.abs(Number(r.amount||0));
+>>     });
+>>     const data=Object.entries(flows).map(([key,val],idx)=>{ const [from,to]=key.split('|'); return {from,to,flow:+val.toFixed(2),color:window.financeColor(idx,0.8)}; });
+>>     const cfg={type:'sankey',data:{datasets:[{label:'Потоки',data}]} ,options:{plugins:{legend:{display:false}}}};
+>>     window.financeRenderChart(cfg,mount);
+>>   }
+>>   await render();
+>>   window.financeRegister(render);
+>> })();
+>> ```
 
 > [!multi-column]
 >
->> [!info] Кэш‑флоу по дням + MA7/MA30
+>> [!tip] Тепловая карта расходов (день недели × категория)
 >> ```dataviewjs
 >> (async function(){
->>   var rows = await window.financeRows();
->>   var IN = /^(income|refund|dividend|invest_sell)$/;
->>   var byDay = {};
->>   for (var i=0;i<rows.length;i++){
->>     var date=rows[i][0], type=rows[i][1], amount=rows[i][2];
->>     var a=Math.abs(Number(amount||0)); if(!byDay[date]) byDay[date]={inc:0,exp:0};
->>     if(IN.test(type)) byDay[date].inc+=a; else byDay[date].exp+=a;
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount=dv.el('div',''); mount.style.height='320px';
+>>   async function render(){
+>>     const rows=await window.financeRows();
+>>     const cats=[...new Set(rows.filter(r=>!window.financeIN.test(r.type)).map(r=>r.category||'—'))].sort();
+>>     const days=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+>>     const map={};
+>>     rows.forEach(r=>{
+>>       if(window.financeIN.test(r.type)) return;
+>>       const dow=moment(r.date,'YYYY-MM-DD').isoWeekday()-1;
+>>       const cat=r.category||'—';
+>>       const key=`${dow}|${cat}`;
+>>       map[key]=(map[key]||0)+Math.abs(Number(r.amount||0));
+>>     });
+>>     const data=[];
+>>     days.forEach((dLabel,dIdx)=>{
+>>       cats.forEach((cat,cIdx)=>{
+>>         data.push({x:cIdx,y:dIdx,v:Math.round(map[`${dIdx}|${cat}`]||0)});
+>>       });
+>>     });
+>>     const cfg={type:'matrix',data:{datasets:[{label:'Расходы',data,width:({chart})=>chart.chartArea.width/cats.length,height:({chart})=>chart.chartArea.height/days.length,backgroundColor:ctx=>{
+>>       const v=ctx.raw.v||0; const alpha=Math.min(0.9,(v/Math.max(...data.map(x=>x.v||1)))+0.05);
+>>       return `rgba(231,76,60,${alpha})`;
+>>     },borderWidth:1,borderColor:'rgba(255,255,255,0.1)'}]},options:{scales:{x:{type:'category',labels:cats,position:'top'},y:{type:'category',labels:days}},plugins:{tooltip:{callbacks:{title:ctx=>`Категория: ${cats[ctx[0].raw.x]}`,label:ctx=>`${days[ctx.raw.y]}: ${ctx.raw.v.toLocaleString('ru-RU')} ₽`}}}}};
+>>     window.financeRenderChart(cfg,mount);
 >>   }
->>   var labels=Object.keys(byDay).sort();
->>   var inc=[],exp=[],net=[],i;
->>   for(i=0;i<labels.length;i++){ inc.push(+byDay[labels[i]].inc.toFixed(2)); exp.push(+byDay[labels[i]].exp.toFixed(2)); net.push(+(inc[i]-exp[i]).toFixed(2)); }
->>   function MA(arr,w){ var out=[],i,j; for(i=0;i<arr.length;i++){ var s=Math.max(0,i-w+1),sum=0,c=0; for(j=s;j<=i;j++){ sum+=arr[j]; c++; } out.push(+(sum/c).toFixed(2)); } return out; }
->>   var ma7=MA(net,7), ma30=MA(net,30);
->>   function mk(label,data,fill,color){ return {label:label,data:data,type:'line',tension:.4,cubicInterpolationMode:'monotone',pointRadius:0,fill:fill,borderColor:color,backgroundColor:color}; }
->>   var cfg={type:'line',data:{labels:labels,datasets:[
->>     mk('Доходы',inc,false,'rgba(46,204,113,.9)'),
->>     mk('Расходы',exp,false,'rgba(231,76,60,.9)'),
->>     mk('Net',net,true,'rgba(41,128,185,.35)'),
->>     mk('MA7',ma7,false,'rgba(155,89,182,.9)'),
->>     mk('MA30',ma30,false,'rgba(52,73,94,.9)')
->>   ]}};
->>   var el=dv.el('div',''); el.style.height='300px'; window.renderChart(cfg,el);
+>>   await render();
+>>   window.financeRegister(render);
 >> })();
 >> ```
 >
->> [!info] Доходы vs Расходы (stacked) + Net
+>> [!tip] Расходы по счетам
 >> ```dataviewjs
 >> (async function(){
->>   var rows=await window.financeRows();
->>   var IN=/^(income|refund|dividend|invest_sell)$/;
->>   var byM={};
->>   for (var i=0;i<rows.length;i++){
->>     var k=rows[i][0].slice(0,7); var a=Math.abs(Number(rows[i][2]||0));
->>     if(!byM[k]) byM[k]={inc:0,exp:0};
->>     if(IN.test(rows[i][1])) byM[k].inc+=a; else byM[k].exp+=a;
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
+>>   const mount=dv.el('div',''); mount.style.height='320px';
+>>   async function render(){
+>>     const rows=await window.financeRows();
+>>     const accounts={};
+>>     rows.forEach(r=>{
+>>       if(window.financeIN.test(r.type)) return;
+>>       const acc=r.account||r.from||'—';
+>>       accounts[acc]=(accounts[acc]||0)+Math.abs(Number(r.amount||0));
+>>     });
+>>     const labels=Object.keys(accounts).sort((a,b)=>accounts[b]-accounts[a]);
+>>     const data=labels.map(l=>+accounts[l].toFixed(2));
+>>     const cfg={type:'radar',data:{labels,datasets:[{label:'Расходы',data,backgroundColor:'rgba(231,76,60,0.25)',borderColor:'#e74c3c',pointBackgroundColor:'#e74c3c'}]},options:{scales:{r:{ticks:{callback:v=>v.toLocaleString('ru-RU')}}}}};
+>>     window.financeRenderChart(cfg,mount);
 >>   }
->>   var labels=Object.keys(byM).sort();
->>   var inc=[],exp=[],net=[]; for(var i2=0;i2<labels.length;i2++){ var v=byM[labels[i2]]; inc.push(+v.inc.toFixed(2)); exp.push(+v.exp.toFixed(2)); net.push(+(v.inc-v.exp).toFixed(2)); }
->>   var cfg={type:'bar',data:{labels:labels,datasets:[
->>     {label:'Доходы',data:inc,stack:'flows',backgroundColor:'rgba(46,204,113,.65)'},
->>     {label:'Расходы',data:exp,stack:'flows',backgroundColor:'rgba(231,76,60,.65)'},
->>     {label:'Net',data:net,stack:'net',backgroundColor:'rgba(52,73,94,.75)'}
->>   ]},options:{scales:{x:{stacked:true},y:{stacked:true}}}};
->>   var el=dv.el('div',''); el.style.height='300px'; window.renderChart(cfg,el);
->> })();
->> ```
->
->> [!info] Структура расходов (donut)
->> ```dataviewjs
->> (async function(){
->>   var rows=await window.financeRows();
->>   var sums={}, i;
->>   for (i=0;i<rows.length;i++){
->>     var type=rows[i][1], amount=rows[i][2], cat=rows[i][3]||'—';
->>     if(/^(income|refund|dividend|invest_sell)$/.test(type)) continue;
->>     var a=Math.abs(Number(amount||0));
->>     sums[cat]=(sums[cat]||0)+a;
->>   }
->>   var labels=Object.keys(sums), vals=[], colors=[];
->>   for(i=0;i<labels.length;i++){ vals.push(+sums[labels[i]].toFixed(2)); colors.push('hsl('+((i*47)%360)+' 70% 55% / .9)'); }
->>   var cfg={type:'doughnut',data:{labels:labels,datasets:[{data:vals,backgroundColor:colors}]}};
->>   var el=dv.el('div',''); el.style.height='260px'; window.renderChart(cfg,el);
+>>   await render();
+>>   window.financeRegister(render);
 >> })();
 >> ```
 
-# 3) Глубокая аналитика
-
-> [!multi-column]
->
->> [!info] Pareto по категориям
->> ```dataviewjs
->> (async function(){
->>   var rows = await window.financeRows();
->>   var sums = {};
->>   for (var i = 0; i < rows.length; i++) {
->>     var type = rows[i][1];
->>     var amount = Number(rows[i][2] || 0);
->>     var cat = rows[i][3] || '—';
->>     if (/^(income|refund|dividend|invest_sell)$/.test(type)) continue;
->>     var a = Math.abs(amount);
->>     sums[cat] = (sums[cat] || 0) + a;
->>   }
->>   var items = []; for (var k in sums) if (Object.prototype.hasOwnProperty.call(sums,k)) items.push([k, sums[k]]);
->>   items.sort(function(a,b){ return b[1] - a[1]; });
->>   var labels = [], vals = [], total = 0;
->>   for (var j = 0; j < items.length; j++) { labels.push(items[j][0]); vals.push(+items[j][1].toFixed(2)); total += items[j][1]; }
->>   var cum = [], acc = 0; for (var t = 0; t < vals.length; t++) { acc += vals[t]; cum.push(+((acc / (total || 1)) * 100).toFixed(2)); }
->>   var cfg = { type: 'bar', data: { labels: labels, datasets: [
->>       { label: 'Расходы', data: vals, yAxisID: 'y' },
->>       { label: 'Нак. %', data: cum, yAxisID: 'y1', type: 'line', tension: 0.4, pointRadius: 0 }
->>     ]}, options: { scales: { y: { beginAtZero: true }, y1: { beginAtZero: true, max: 100, position: 'right', grid: { drawOnChartArea: false } } } } };
->>   var el = dv.el('div',''); el.style.height='320px'; window.renderChart(cfg, el);
->> })();
->> ```
->
->> [!info] Контрольная диаграмма (мес. расходы + ±σ)
->> ```dataviewjs
->> (async function(){
->>   var rows=await window.financeRows(), IN=/^(income|refund|dividend|invest_sell)$/;
->>   var byM={}, i;
->>   for(i=0;i<rows.length;i++){ var k=rows[i][0].slice(0,7); var a=Math.abs(Number(rows[i][2]||0)); byM[k]=(byM[k]||0)+(IN.test(rows[i][1])?0:a); }
->>   var labels=Object.keys(byM).sort(), exp=[], i2; for(i2=0;i2<labels.length;i2++) exp.push(+byM[labels[i2]].toFixed(2));
->>   var mean=0; for(i2=0;i2<exp.length;i2++) mean+=exp[i2]; mean/=Math.max(1,exp.length);
->>   var s2=0; for(i2=0;i2<exp.length;i2++) s2+=(exp[i2]-mean)*(exp[i2]-mean); var sd=Math.sqrt(s2/Math.max(1,exp.length));
->>   function line(v){ var a=[],i3; for(i3=0;i3<labels.length;i3++) a.push(+v.toFixed(2)); return a; }
->>   function mk(label,data,color){ return {label:label,data:data,type:'line',tension:0,pointRadius:0,borderDash:[6,6],borderColor:color}; }
->>   var cfg={type:'line',data:{labels:labels,datasets:[
->>     {label:'Расходы/мес',data:exp,type:'line',tension:.4,cubicInterpolationMode:'monotone',pointRadius:0,borderColor:'rgba(231,76,60,.9)'},
->>     mk('Mean',line(mean),'rgba(52,73,94,.9)'), mk('+1σ',line(mean+sd),'rgba(41,128,185,.9)'), mk('-1σ',line(mean-sd),'rgba(41,128,185,.9)')
->>   ]}};
->>   var el=dv.el('div',''); el.style.height='280px'; window.renderChart(cfg,el);
->> })();
->> ```
->
->> [!info] Календарный heatmap (дни)
->> ```dataviewjs
->> (async function(){
->>   if(!(Chart && Chart.controllers && Chart.controllers.matrix)){ dv.paragraph('⚠️ matrix-плагин не загружен'); return; }
->>   var rows=await window.financeRows(), byDay={}, i;
->>   for(i=0;i<rows.length;i++){ if(/^(income|refund|dividend|invest_sell)$/.test(rows[i][1])) continue; var d=rows[i][0]; byDay[d]=(byDay[d]||0)+Math.abs(Number(rows[i][2]||0)); }
->>   var days=Object.keys(byDay).sort(), data=[], i2; for(i2=0;i2<days.length;i2++){ var d2=days[i2]; data.push({x:d2,y:moment(d2,'YYYY-MM-DD').format('ddd'),v:+byDay[d2].toFixed(2)}); }
->>   var cfg={type:'matrix',data:{datasets:[{label:'Расходы',data:data,width:(c)=> (c.chartArea||{}).width/Math.min(days.length,60),height:(c)=> (c.chartArea||{}).height/7,backgroundColor:(c)=>{ var v=c.raw.v; var l=Math.max(20,80 - Math.min(80, v/10)); return 'hsl(0 70% '+l+'% / .9)';}}]},options:{scales:{y:{type:'category',offset:true,reverse:true},x:{type:'time',time:{unit:'day'}}},plugins:{legend:{display:false}}};
->>   var el=dv.el('div',''); el.style.height='240px'; window.renderChart(cfg,el);
->> })();
->> ```
-
-# 4) Акции и прочее
-
-> [!multi-column]
->
->> [!info] Стоимость портфеля (line)
->> ```dataviewjs
->> (async function(){
->>   var rows=await window.financeRows(), byD={}, i;
->>   for(i=0;i<rows.length;i++){ var date=rows[i][0], t=rows[i][9], q=Number(String(rows[i][10]||'').replace(',','.')), p=Number(String(rows[i][11]||'').replace(',','.')); if(!t||isNaN(q)||isNaN(p)) continue; byD[date]=(byD[date]||0)+q*p; }
->>   var labels=Object.keys(byD).sort(), val=[], j; for(j=0;j<labels.length;j++) val.push(+byD[labels[j]].toFixed(2));
->>   var cfg={type:'line',data:{labels:labels,datasets:[{label:'Portfolio value',data:val,type:'line',tension:.4,pointRadius:0}]} };
->>   var el=dv.el('div',''); el.style.height='260px'; window.renderChart(cfg,el);
->> })();
->> ```
->
->> [!info] Баланс по счетам (Δ притоки−оттоки)
->> ```dataviewjs
->> (async function(){
->>   var rows=await window.financeRows(), IN=/^(income|refund|dividend|invest_sell)$/;
->>   var byAcc={}, i;
->>   for(i=0;i<rows.length;i++){ var type=rows[i][1], a=Math.abs(Number(rows[i][2]||0)), from=rows[i][6], to=rows[i][7]; if(IN.test(type)){ byAcc[to||'—']=(byAcc[to||'—']||0)+a; } else { byAcc[from||'—']=(byAcc[from||'—']||0)-a; } }
->>   var labels=Object.keys(byAcc), vals=[], i2; for(i2=0;i2<labels.length;i2++) vals.push(+byAcc[labels[i2]].toFixed(2));
->>   var colors=[]; for(i2=0;i2<vals.length;i2++) colors.push(vals[i2]>=0?'rgba(46,204,113,.7)':'rgba(231,76,60,.7)');
->>   var cfg={type:'bar',data:{labels:labels,datasets:[{label:'ΔБаланс',data:vals,backgroundColor:colors}]}};
->>   var el=dv.el('div',''); el.style.height='260px'; window.renderChart(cfg,el);
->> })();
->> ```
->
->> [!info] Sankey «Откуда → Куда/Категория»
->> ```dataviewjs
->> (async function(){
->>   if(!(Chart && Chart.controllers && Chart.controllers.sankey)){ dv.paragraph('⚠️ sankey-плагин не загружен'); return; }
->>   var rows=await window.financeRows(), IN=/^(income|refund|dividend|invest_sell)$/;
->>   var links={}, i;
->>   for(i=0;i<rows.length;i++){ var a=Math.abs(Number(rows[i][2]||0)), cat=rows[i][3]||'Расходы', from=rows[i][6]||'Счёт', to=rows[i][7]||'Счёт'; if(IN.test(rows[i][1])){ links[(from||'Источник')+'|'+(to||cat)]=(links[(from||'Источник')+'|'+(to||cat)]||0)+a; } else { links[(from||'Счёт')+'|'+cat]=(links[(from||'Счёт')+'|'+cat]||0)+a; } }
->>   var data=[], k; for(k in links){ if(Object.prototype.hasOwnProperty.call(links,k)){ var sp=k.split('|'); data.push({from:sp[0],to:sp[1],flow:+links[k].toFixed(2)}); } }
->>   var cfg={type:'sankey',data:{datasets:[{label:'Потоки',data:data,colorFrom:'#2ecc71',colorTo:'#e74c3c',colorMode:'gradient'}]}};
->>   var el=dv.el('div',''); el.style.height='360px'; window.renderChart(cfg,el);
->> })();
->> ```
+## 9) Сводные таблицы
+```dataviewjs
+(async function(){
+  await dv.view('90_System/92_File/Views/finance-bootstrap');
+  const mount = dv.el('div','');
+  mount.className='finance-table';
+  async function render(){
+    const rows = await window.financeRows();
+    const tableData = rows.map(r=>({
+      date:r.date,
+      type:r.type,
+      direction: window.financeIN.test(r.type)?'Доход':'Расход',
+      amount: Math.abs(Number(r.amount||0)),
+      signed: r.signed,
+      category: r.category||'—',
+      subcategory: r.subcategory||'—',
+      source: r.source||r.from||'—',
+      target: r.to||'—',
+      account: r.account||'—',
+      asset: r.asset||'',
+      quantity: r.quantity||'',
+      price: r.price||'',
+      link: r.link
+    }));
+    if (mount.__table) {
+      try { mount.__table.destroy(); } catch (e) { console.warn('[Finance Table]', e); }
+    }
+    mount.innerHTML='';
+    const table = document.createElement('div');
+    mount.append(table);
+    const Tab = window.Tabulator;
+    mount.__table = new Tab(table, {
+      data: tableData,
+      layout: 'fitColumns',
+      height: '520px',
+      reactiveData: true,
+      columns: [
+        {title:'Дата', field:'date', sorter:'string', hozAlign:'center'},
+        {title:'Тип', field:'direction', sorter:'string'},
+        {title:'Категория', field:'category', sorter:'string'},
+        {title:'Подкатегория', field:'subcategory', sorter:'string'},
+        {title:'Источник/Откуда', field:'source', sorter:'string'},
+        {title:'Куда/Назначение', field:'target', sorter:'string'},
+        {title:'Счёт', field:'account', sorter:'string'},
+        {title:'Сумма ₽', field:'amount', sorter:'number', formatter:(cell)=>cell.getValue().toLocaleString('ru-RU',{minimumFractionDigits:2, maximumFractionDigits:2})},
+        {title:'Net ₽', field:'signed', sorter:'number', formatter:(cell)=>cell.getValue().toLocaleString('ru-RU',{minimumFractionDigits:2, maximumFractionDigits:2})},
+        {title:'Актив', field:'asset', sorter:'string'},
+        {title:'Кол-во', field:'quantity', sorter:'string'},
+        {title:'Цена', field:'price', sorter:'string'},
+        {title:'Заметка', field:'link', sorter:'string', formatter:(cell)=>{ const link=cell.getValue(); return link?`<a data-href="${link.path}" href="${link.path}" class="internal-link">Открыть</a>`:''; }}
+      ],
+      initialSort:[
+        {column:'date', dir:'desc'},
+        {column:'amount', dir:'desc'}
+      ]
+    });
+  }
+  await render();
+  window.financeRegister(render);
+})();
+```
 
 ---
 
-# 📄 Таблица транзакций (источник, автообновление)
-```dataviewjs
-(async function(){
-  const FOLDER = '60_Finance';
-  const container = dv.el('div',''); container.style.display='grid'; container.style.gap='10px';
-
-  function cfgR(){ try{ return JSON.parse(localStorage.getItem('finance_range2')||'{}'); }catch(_){ return {mode:'all'}; } }
-  function computeRange(c){
-    const now = moment().endOf('day');
-    const m = c.mode || 'all';
-    if(m==='all') return {s: moment('1900-01-01'), e: now};
-    if(m==='day'   && c.day  ){ const d=moment(c.day,'YYYY-MM-DD'); return {s:d.clone().startOf('day'), e:d.clone().endOf('day')}; }
-    if(m==='week'  && c.week ){ const w=moment(c.week+'-1','GGGG-[W]WW-E'); return {s:w.clone().startOf('isoWeek'), e:w.clone().endOf('isoWeek')}; }
-    if(m==='month' && c.month){ const mo=moment(c.month,'YYYY-MM'); return {s:mo.clone().startOf('month'), e:mo.clone().endOf('month')}; }
-    if(m==='quarter'&& c.qyear){ const q=Number(c.quarter||1), y=Number(c.qyear); const mo=moment({year:y, month:(q-1)*3, day:1}); return {s:mo.clone().startOf('quarter'), e:mo.clone().endOf('quarter')}; }
-    if(m==='year'  && c.year ){ const y=Number(c.year); const mo=moment({year:y, month:0, day:1}); return {s:mo.clone().startOf('year'), e:mo.clone().endOf('year')}; }
-    if(m==='range' ){ let s=c.start?moment(c.start,'YYYY-MM-DD').startOf('day'):moment('1900-01-01'); let e=c.end?moment(c.end,'YYYY-MM-DD').endOf('day'):now; if(e.isBefore(s)){ const t=s; s=e; e=t; } return {s,e}; }
-    return {s: moment('1900-01-01'), e: now};
-  }
-
-  const RX_DATE = /^-\s*Дата:\s*\*{0,2}(\d{4}-\d{2}-\d{2})(?:\s+\d{2}:\d{2})?/mi;
-  const RX_TYPE = /#type\/([A-Za-z_]+)/;
-  const RX_AMT  = /^-\s*Сумма:\s*\*{0,2}([\d\s.,+-]+)/mi;
-  const RX_CAT  = /^-\s*Категория:\s*\*{0,2}([^\n*]+)/mi;
-  const RX_SUB  = /^-\s*Подкатегория:\s*\*{0,2}([^\n*]+)/mi;
-  const RX_SRC  = /^-\s*Источник:\s*\*{0,2}([^\n*]+)/mi;
-  const RX_FROM = /^-\s*Откуда:\s*\*{0,2}([^\n*]+)/mi;
-  const RX_TO   = /^-\s*Куда:\s*\*{0,2}([^\n*]+)/mi;
-  const RX_ACC  = /^-\s*Сч[её]т:\s*\*{0,2}([^\n*]+)/mi;
-  const RX_TICK = /^-\s*(?:Актив|Тикер):\s*\*{0,2}([^\n*]+)/mi;
-  const RX_QTY  = /^-\s*Кол-во[^:]*:\s*\*{0,2}([^\n*]+)/mi;
-  const RX_PRICE= /^-\s*Цена[^:]*:\s*\*{0,2}([^\n*]+)/mi;
-
-  function pick(rx, txt){ const m=(txt||'').match(rx); return m? String(m[1]).trim() : ''; }
-  function fmt(n){ if(n==null||n==='') return ''; const x=Number(String(n).replace(/\s+/g,'').replace(',','.')); return isNaN(x)?String(n):x.toFixed(2); }
-
-  let lastRows = [];
-  window.financeCurrentRange = () => { const R=computeRange(cfgR()); return { from: R.s.format('YYYY-MM-DD'), to: R.e.format('YYYY-MM-DD') }; };
-  window.financeRows = async () => lastRows.slice();
-
-  async function collectRows(){
-    const CR = cfgR(); const R = computeRange(CR);
-    const pages = dv.pages('\"' + FOLDER + '\"');
-    const out = [];
-    for(const p of pages){
-      const txt = await dv.io.load(p.file.path).catch(()=>'');
-      const m = (txt||'').match(RX_DATE); if(!m) continue;
-      const d = moment(m[1],'YYYY-MM-DD'); if(!d.isValid()) continue;
-      if(d.isBefore(R.s) || d.isAfter(R.e)) continue;
-      out.push([
-        d.format('YYYY-MM-DD'),
-        pick(RX_TYPE, txt),
-        (pick(RX_AMT, txt)||'').replace(/\s+/g,'').replace(',','.'),
-        pick(RX_CAT, txt), pick(RX_SUB, txt), pick(RX_SRC, txt),
-        pick(RX_FROM, txt), pick(RX_TO, txt), pick(RX_ACC, txt),
-        pick(RX_TICK, txt), pick(RX_QTY, txt), pick(RX_PRICE, txt),
-        p.file.link
-      ]);
-    }
-    out.sort((a,b)=> a[0].localeCompare(b[0]));
-    return out;
-  }
-
-  function renderTable(rows){
-    container.innerHTML = '';
-    const tbl = document.createElement('table');
-    tbl.style.borderCollapse = 'collapse'; tbl.style.width='100%'; tbl.style.fontSize='0.95rem';
-    const cols = ['Дата','Тип','Сумма','Категория','Подкатегория','Источник','Откуда','Куда','Счёт','Тикер','Кол-во','Цена','Файл'];
-    const thead = document.createElement('thead'); const trh = document.createElement('tr');
-    cols.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; th.style.borderBottom='1px solid var(--background-modifier-border)'; th.style.textAlign='left'; th.style.padding='4px 6px'; trh.appendChild(th); });
-    thead.appendChild(trh); tbl.appendChild(thead);
-    const tbody = document.createElement('tbody');
-    rows.forEach(r=>{
-      const tr = document.createElement('tr');
-      r.slice(0,12).forEach((cell, idx)=>{
-        const td=document.createElement('td'); td.style.padding='4px 6px'; td.style.borderBottom='1px solid var(--background-modifier-border)';
-        td.textContent = idx===2 ? fmt(cell) : (cell||'');
-        tr.appendChild(td);
-      });
-      const tdL = document.createElement('td'); tdL.style.padding='4px 6px'; tdL.style.borderBottom='1px solid var(--background-modifier-border)';
-      try { tdL.appendChild(dv.el('span', r[12])); } catch(_) { tdL.textContent = String(r[12]||''); }
-      tr.appendChild(tdL);
-      tbody.appendChild(tr);
-    });
-    tbl.appendChild(tbody);
-    container.appendChild(tbl);
-  }
-
-  let busy = false;
-  async function refresh(){ if(busy) return; busy = true; const rows = await collectRows(); lastRows = rows; renderTable(rows); busy = false; }
-
-  const kick = ()=> refresh();
-  window.addEventListener('finance-range-changed', kick);
-  try { app?.vault?.on?.('modify', kick); } catch(_) {}
-  try { app?.metadataCache?.on?.('dataview:metadata-change', kick); } catch(_) {}
-  try { app?.workspace?.on?.('file-open', kick); } catch(_) {}
-  const hb = setInterval(kick, 10000); dv.current()?.onunload?.(() => clearInterval(hb));
-
-  refresh();
-})();
-```
+**Подсказки:**
+- Управляй целями в файле `30_Areas/33_Finance/33.2_Planning/Finance_Config`.
+- Для новых типов операций добавь теги `#type/...`, чтобы Auto Note Mover сразу разложил заметки.
+- Используй Tabulator (стрелки в заголовках) для сортировки по сумме, категории, количеству операций.

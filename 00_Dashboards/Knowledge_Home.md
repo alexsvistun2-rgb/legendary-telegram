@@ -31,7 +31,7 @@ function tableSimple(parent, pages, {limit=20, includeLinks=false} = {}) {
   else dv.table(["File","Updated"], rows);
 }
 
-const ROOT = "50_Knowledge/59_Inbox/59.1_ZK";
+const ROOT = "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK";
 
 // keep: Последние, Автор/Личность, Fleeting, Книги, Цитаты
 tableSimple(section("Последние заметки"), dv.pages('"' + ROOT + '"'));

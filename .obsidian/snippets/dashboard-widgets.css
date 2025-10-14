@@ -1,0 +1,285 @@
+.habit-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.habit-status-card {
+  position: relative;
+  padding: 16px;
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(46,51,90,0.75), rgba(19,24,42,0.85));
+  box-shadow: 0 18px 34px -24px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.habit-status-card header {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+.habit-progress-bg {
+  position: relative;
+  width: 100%;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.07);
+  overflow: hidden;
+}
+
+.habit-progress {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--habit-color), color-mix(in srgb, var(--habit-color) 70%, white 30%));
+  transition: width .4s ease;
+}
+
+.habit-status-card strong {
+  font-size: 0.9rem;
+  opacity: 0.85;
+}
+
+.finance-home-cards {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  margin-top: 12px;
+}
+
+.finance-card {
+  padding: 16px;
+  border-radius: 16px;
+  background: linear-gradient(160deg, rgba(20,26,40,0.85), rgba(20,26,40,0.55));
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 18px 32px -24px rgba(0,0,0,0.65);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.finance-card span {
+  font-size: 0.85rem;
+  opacity: 0.7;
+}
+
+.finance-card strong {
+  font-size: 1.25rem;
+  color: var(--accent, var(--interactive-accent));
+}
+
+.media-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.media-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(150deg, rgba(26,32,52,0.85), rgba(18,22,40,0.72));
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 18px 34px -26px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.media-card header {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.media-card strong {
+  font-size: 1.3rem;
+}
+
+.media-card span {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.health-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+  margin-top: 12px;
+}
+
+.health-card {
+  padding: 18px;
+  border-radius: 18px;
+  background: linear-gradient(150deg, rgba(24,54,82,0.85), rgba(16,32,48,0.75));
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 20px 36px -28px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.health-card header {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.health-card strong {
+  font-size: 1.35rem;
+}
+
+.health-card span {
+  font-size: 0.8rem;
+  opacity: 0.72;
+}
+
+.finance-filter {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  background: rgba(20,24,38,0.65);
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 12px 28px -20px rgba(0,0,0,0.7);
+}
+
+.finance-filter-row {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.finance-filter-row span {
+  min-width: 110px;
+  font-weight: 600;
+}
+
+.finance-filter-row input,
+.finance-filter-row select {
+  flex: 1;
+  background: rgba(0,0,0,0.35);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 6px 10px;
+  color: var(--text-normal);
+}
+
+.finance-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(180px,1fr));
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.finance-summary-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: linear-gradient(160deg, rgba(29,33,52,0.95), rgba(15,18,28,0.75));
+  box-shadow: 0 18px 32px -24px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.finance-summary-card header {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.finance-summary-card strong {
+  font-size: 1.35rem;
+  color: var(--accent, var(--interactive-accent));
+}
+
+.finance-summary-card span {
+  font-size: 0.8rem;
+  opacity: 0.7;
+}
+
+.finance-chart {
+  width: 100%;
+  height: 100%;
+  min-height: 280px;
+  padding: 8px;
+}
+
+.finance-savings-grid {
+  display: grid;
+  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+  margin: 18px 0;
+}
+
+.finance-saving-card {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.07);
+  background: linear-gradient(155deg, rgba(18,25,40,0.9), rgba(12,18,28,0.7));
+  box-shadow: 0 16px 32px -24px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.finance-saving-card header {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.finance-saving-card header span {
+  font-size: 0.75rem;
+  opacity: 0.7;
+}
+
+.finance-saving-card .progress {
+  position: relative;
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  overflow: hidden;
+}
+
+.finance-saving-card .progress div {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 60%, white 25%));
+  transition: width .5s ease;
+}
+
+.finance-saving-card p {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.finance-saving-card small {
+  opacity: 0.65;
+  font-size: 0.75rem;
+}
+
+.finance-table {
+  margin-top: 18px;
+  border-radius: 18px;
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+  box-shadow: 0 24px 48px -32px rgba(0,0,0,0.7);
+}
+
+.dashboard .callout[data-callout="multi-column"] {
+  --callout-radius: 16px;
+  --callout-title-size: 0.95rem;
+}
+
+.dashboard .callout-title {
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.dashboard .callout-content {
+  padding-top: 8px;
+}

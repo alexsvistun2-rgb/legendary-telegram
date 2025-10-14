@@ -4,60 +4,250 @@
   "statusBar_trigger_indicator": true,
   "folder_tag_pattern": [
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Purchase",
-      "tag": "#type/purchase",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Purchase",
+      "tag": "type/purchase",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Income",
-      "tag": "#type/income",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Income",
+      "tag": "type/income",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Transfer",
-      "tag": "#type/transfer",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Transfer",
+      "tag": "type/transfer",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Savings",
-      "tag": "#type/savings",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Savings",
+      "tag": "type/savings",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Invest_Buy",
-      "tag": "#type/invest_buy",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Invest_Buy",
+      "tag": "type/invest_buy",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Invest_Sell",
-      "tag": "#type/invest_sell",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Invest_Sell",
+      "tag": "type/invest_sell",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Dividend",
-      "tag": "#type/dividend",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Dividend",
+      "tag": "type/dividend",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Tax",
-      "tag": "#type/tax",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Tax",
+      "tag": "type/tax",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Fee",
-      "tag": "#type/fee",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Fee",
+      "tag": "type/fee",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Refund",
-      "tag": "#type/refund",
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Refund",
+      "tag": "type/refund",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/33_Finance/33.1_Inbox/33.1.1_Finance_note/Other",
+      "tag": "type/other",
+      "pattern": ""
+    },
+    {
+      "folder": "20_Journal/22_Tasks/22.1_GTD",
+      "tag": "t/quick",
+      "pattern": ""
+    },
+    {
+      "folder": "20_Journal/22_Tasks/22.1_GTD",
+      "tag": "t/todo",
+      "pattern": ""
+    },
+    {
+      "folder": "20_Journal/22_Tasks/22.1_GTD",
+      "tag": "t/urgent",
+      "pattern": ""
+    },
+    {
+      "folder": "20_Journal/22_Tasks/22.1_GTD",
+      "tag": "t/triage",
+      "pattern": ""
+    },
+    {
+      "folder": "20_Journal/22_Tasks/22.2_Delegation",
+      "tag": "t/delegate",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Literature/Books",
+      "tag": "knowledge/liter_book",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Literature/E-books",
+      "tag": "knowledge/ebook",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Literature/Quotes",
+      "tag": "knowledge/liter_quote",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Literature/Terms",
+      "tag": "knowledge/liter_term",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Permanent",
+      "tag": "knowledge/permanent",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Fleeting",
+      "tag": "knowledge/fleeting",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/MOC",
+      "tag": "knowledge/moc",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Authors",
+      "tag": "knowledge/author",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Sources",
+      "tag": "knowledge/source",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Lectures",
+      "tag": "knowledge/lecture",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/USMLE",
+      "tag": "knowledge/usmle",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Questions",
+      "tag": "knowledge/question",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Prompts",
+      "tag": "knowledge/prompt",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/Tools",
+      "tag": "knowledge/tool",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/41_ZK/41.1_Inbox/41.1.1_ZK/OKR",
+      "tag": "knowledge/okr",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/34_Health/34.1_Records/Analyses",
+      "tag": "health/analysis",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/34_Health/34.1_Records/Doctor_Notes",
+      "tag": "health/doctor",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/34_Health/34.1_Records/Diagnostics",
+      "tag": "health/diagnostic",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/34_Health/34.2_Fitness/Workouts",
+      "tag": "fitness/workout",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/34_Health/34.2_Fitness/Runs",
+      "tag": "fitness/run",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/35_Habits/35.1_Log",
+      "tag": "habit/log",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/43_Media/43.1_Music",
+      "tag": "media/music",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/43_Media/43.2_Movies",
+      "tag": "media/movie",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/43_Media/43.3_Series",
+      "tag": "media/series",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/43_Media/43.4_Playlists",
+      "tag": "media/playlist",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Library/42.1_Inbox/Books",
+      "tag": "library/book",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Library/42.1_Inbox/Articles",
+      "tag": "library/article",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Library/42.1_Inbox/Notes",
+      "tag": "library/note",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Personal/51_Documents/Passports",
+      "tag": "documents/passport",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Personal/51_Documents/Agreements",
+      "tag": "documents/agreement",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Personal/51_Documents/Certificates",
+      "tag": "documents/certificate",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Personal/52_Archive",
+      "tag": "documents/archive",
       "pattern": ""
     }
   ],
   "use_regex_to_check_for_excluded_folder": false,
   "excluded_folder": [
     {
-      "folder": "00_Templates"
+      "folder": "90_System"
     }
   ]
 }
