@@ -4,53 +4,63 @@
   "statusBar_trigger_indicator": true,
   "folder_tag_pattern": [
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Purchase",
+      "folder": "60_Finance/61_Transactions/61.1_Expenses",
       "tag": "#type/purchase",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Income",
+      "folder": "60_Finance/61_Transactions/61.2_Income",
       "tag": "#type/income",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Transfer",
+      "folder": "60_Finance/61_Transactions/61.3_Transfers",
       "tag": "#type/transfer",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Savings",
+      "folder": "60_Finance/61_Transactions/61.4_Savings",
       "tag": "#type/savings",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Invest_Buy",
+      "folder": "60_Finance/61_Transactions/61.5_Invest_Buy",
       "tag": "#type/invest_buy",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Invest_Sell",
+      "folder": "60_Finance/61_Transactions/61.6_Invest_Sell",
       "tag": "#type/invest_sell",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Dividend",
+      "folder": "60_Finance/61_Transactions/61.7_Dividends",
       "tag": "#type/dividend",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Tax",
+      "folder": "60_Finance/61_Transactions/61.8_Taxes",
       "tag": "#type/tax",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Fee",
+      "folder": "60_Finance/61_Transactions/61.9_Fees",
       "tag": "#type/fee",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Refund",
+      "folder": "60_Finance/61_Transactions/61.10_Refunds",
       "tag": "#type/refund",
+      "pattern": ""
+    },
+    {
+      "folder": "15_Journal/15.1_Tasks/15.1.1_Quick",
+      "tag": "#t/quick",
+      "pattern": ""
+    },
+    {
+      "folder": "15_Journal/15.1_Tasks/15.1.2_Delegated",
+      "tag": "#t/delegate",
       "pattern": ""
     }
   ],

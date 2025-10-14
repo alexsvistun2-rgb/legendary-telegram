@@ -8,7 +8,7 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "Разобрать",
+              "name": "🧺 Inbox",
               "tag": "#t/triage"
             }
           },
@@ -16,7 +16,7 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "To Do",
+              "name": "🔥 Фокус",
               "tag": "#t/todo"
             }
           },
@@ -24,7 +24,7 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "Срочные",
+              "name": "⏰ Срочно",
               "tag": "#t/urgent"
             }
           },
@@ -32,7 +32,7 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "Делегировать",
+              "name": "🤝 Делегировано",
               "tag": "#t/delegate"
             }
           },
@@ -40,7 +40,7 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "Проекты",
+              "name": "🛠 Проекты",
               "tag": "#t/project"
             }
           },
@@ -50,7 +50,7 @@
               "collapsed": false,
               "index": 5,
               "limit": 100,
-              "name": "Done"
+              "name": "✅ Готово"
             }
           }
         ],
@@ -58,8 +58,8 @@
         "filterPolarity": "Allow",
         "filterScope": "Both",
         "name": "GTD",
-        "showColumnTags": true,
-        "showFilteredTags": true
+        "showColumnTags": false,
+        "showFilteredTags": false
       }
     ],
     "globalSettings": {

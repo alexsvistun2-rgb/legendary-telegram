@@ -20,17 +20,17 @@ function md(x){ // escape Markdown safely
 // Return folder path ANM will use for a given money type
 function targetFolderFor(type){
   const map = {
-    expense:    "60_Finance/69_Inbox/69.1_Finance_note/Purchase",
-    income:     "60_Finance/69_Inbox/69.1_Finance_note/Income",
-    transfer:   "60_Finance/69_Inbox/69.1_Finance_note/Transfer",
-    sinking:    "60_Finance/69_Inbox/69.1_Finance_note/Savings",
-    invest_buy: "60_Finance/69_Inbox/69.1_Finance_note/Invest_Buy",
-    invest_sell:"60_Finance/69_Inbox/69.1_Finance_note/Invest_Sell",
-    divint:     "60_Finance/69_Inbox/69.1_Finance_note/Dividend",
-    tax:        "60_Finance/69_Inbox/69.1_Finance_note/Tax",
-    fee:        "60_Finance/69_Inbox/69.1_Finance_note/Fee",
-    refund:     "60_Finance/69_Inbox/69.1_Finance_note/Refund",
-    other:      "60_Finance/69_Inbox/69.1_Finance_note/Other"
+    expense:    "60_Finance/61_Transactions/61.1_Expenses",
+    income:     "60_Finance/61_Transactions/61.2_Income",
+    transfer:   "60_Finance/61_Transactions/61.3_Transfers",
+    sinking:    "60_Finance/61_Transactions/61.4_Savings",
+    invest_buy: "60_Finance/61_Transactions/61.5_Invest_Buy",
+    invest_sell:"60_Finance/61_Transactions/61.6_Invest_Sell",
+    divint:     "60_Finance/61_Transactions/61.7_Dividends",
+    tax:        "60_Finance/61_Transactions/61.8_Taxes",
+    fee:        "60_Finance/61_Transactions/61.9_Fees",
+    refund:     "60_Finance/61_Transactions/61.10_Refunds",
+    other:      "60_Finance/61_Transactions/61.11_Other"
   };
   return map[type] || map.other;
 }
@@ -45,6 +45,21 @@ async function ensureUniqueTitle(folderPath, baseTitle){
     if (!exists) return candidate;
     n += 1;
     candidate = `${baseTitle} (${n})`;
+  }
+}
+
+async function ensureFolderExists(folderPath){
+  const norm = String(folderPath || "").replace(/\\/g, "/");
+  if (!norm) return;
+  if (app.vault.getAbstractFileByPath(norm)) return;
+  const parts = norm.split("/");
+  let acc = "";
+  for (const part of parts){
+    if (!part) continue;
+    acc = acc ? `${acc}/${part}` : part;
+    if (!app.vault.getAbstractFileByPath(acc)){
+      try { await app.vault.createFolder(acc); } catch (_) {}
+    }
   }
 }
 
@@ -79,20 +94,7 @@ let fm = { title: "", type: "", tags: [] };
 // ---------- KNOWLEDGE ----------
 if (choice === "knowledge") {
   // create folder tree if not exists
-  async function ensureFolder(folderPath) {
-    const norm = String(folderPath || "").replace(/\\/g, "/");
-    if (app.vault.getAbstractFileByPath(norm)) return;
-    const parts = norm.split("/");
-    let acc = "";
-    for (const p of parts) {
-      if (!p) continue;
-      acc = acc ? `${acc}/${p}` : p;
-      if (!app.vault.getAbstractFileByPath(acc)) {
-        try { await app.vault.createFolder(acc); } catch (e) {}
-      }
-    }
-  }
-  const ROOT = "50_Knowledge/59_Inbox/59.1_ZK";
+  const ROOT = "50_Knowledge";
   const KR = (p) => `${ROOT}/${p}`;
 
   // Map from item key to RU tag (second tag)
@@ -115,7 +117,7 @@ if (choice === "knowledge") {
   };
 
   const ITEMS = [
-    { key:"liter_book",  emoji:"📚", name:"Литература — Книга", ru:"Книга", tagCat:"Книга", folder: KR("Literature/Books"),
+    { key:"liter_book",  emoji:"📚", name:"Литература — Книга", ru:"Книга", tagCat:"Книга", folder: KR("52_Library/52.1_Books"),
       skeleton:[
         "## 📗 Название",
         "",
@@ -144,7 +146,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"ebook", emoji:"📘", name:"E-book заметка", ru:"Книга (e-book)", tagCat:"Книга", folder: KR("Literature/E-books"),
+    { key:"ebook", emoji:"📘", name:"E-book заметка", ru:"Книга (e-book)", tagCat:"Книга", folder: KR("52_Library/52.2_Ebooks"),
       skeleton:[
         "## 📗 Название",
         "",
@@ -170,7 +172,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"liter_quote", emoji:"📝", name:"Литература — Цитата", ru:"Цитата", tagCat:"Цитата", folder: KR("Literature/Quotes"),
+    { key:"liter_quote", emoji:"📝", name:"Литература — Цитата", ru:"Цитата", tagCat:"Цитата", folder: KR("52_Library/52.3_Quotes"),
       skeleton:[
         "## 💬 Цитата",
         "",
@@ -183,7 +185,7 @@ if (choice === "knowledge") {
         ""
       ].join("\n")
     },
-    { key:"liter_term", emoji:"🏷️", name:"Литература — Термин", ru:"Термин", tagCat:"Термин", folder: KR("Literature/Terms"),
+    { key:"liter_term", emoji:"🏷️", name:"Литература — Термин", ru:"Термин", tagCat:"Термин", folder: KR("52_Library/52.4_Terms"),
       skeleton:[
         "## 🏷️ Термин:",
         "",
@@ -201,7 +203,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"permanent", emoji:"🧠", name:"Заметка (перманентная)", ru:"Заметка", tagCat:"Заметка", folder: KR("Permanent"),
+    { key:"permanent", emoji:"🧠", name:"Заметка (перманентная)", ru:"Заметка", tagCat:"Заметка", folder: KR("53_Notes/53.2_Permanent"),
       skeleton:[
         "## 🧠 Суть",
         "",
@@ -217,7 +219,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"fleeting", emoji:"💡", name:"Мимолётная", ru:"Мимолётная", tagCat:"Мимолётная", folder: KR("Fleeting"),
+    { key:"fleeting", emoji:"💡", name:"Мимолётная", ru:"Мимолётная", tagCat:"Мимолётная", folder: KR("53_Notes/53.1_Fleeting"),
       skeleton:[
         "## 💡 Мысль",
         "",
@@ -232,7 +234,7 @@ if (choice === "knowledge") {
         ""
       ].join("\n")
     },
-    { key:"moc", emoji:"🧩", name:"Структура (MOC)", ru:"MOC", tagCat:"MOC", folder: KR("MOC"),
+    { key:"moc", emoji:"🧩", name:"Структура (MOC)", ru:"MOC", tagCat:"MOC", folder: KR("53_Notes/53.3_MOC"),
       skeleton:[
         "## 🗺️ Обзор",
         "",
@@ -248,7 +250,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"author", emoji:"👤", name:"Автор/Личность", ru:"Автор/Личность", tagCat:"Автор", folder: KR("Authors"),
+    { key:"author", emoji:"👤", name:"Автор/Личность", ru:"Автор/Личность", tagCat:"Автор", folder: KR("55_Authors"),
       skeleton:[
         "## 👤 Имя",
         "",
@@ -270,7 +272,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"source", emoji:"🔗", name:"Источник / Статья", ru:"Источник", tagCat:"Источник", folder: KR("Sources"),
+    { key:"source", emoji:"🔗", name:"Источник / Статья", ru:"Источник", tagCat:"Источник", folder: KR("54_Research/54.2_Sources"),
       skeleton:[
         "## 📑 Реквизиты",
         "- Автор: ",
@@ -285,7 +287,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"lecture", emoji:"🎓", name:"Лекция / Конспект", ru:"Лекция", tagCat:"Лекция", folder: KR("Lectures"),
+    { key:"lecture", emoji:"🎓", name:"Лекция / Конспект", ru:"Лекция", tagCat:"Лекция", folder: KR("57_Lectures"),
       skeleton:[
         "## 🎓 Название лекции",
         "",
@@ -307,7 +309,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"usmle", emoji:"🩺", name:"USMLE — Тема", ru:"USMLE", tagCat:"USMLE", folder: KR("USMLE"),
+    { key:"usmle", emoji:"🩺", name:"USMLE — Тема", ru:"USMLE", tagCat:"USMLE", folder: KR("58_USMLE"),
       skeleton:[
         "## 🩺 High-Yield",
         "- ",
@@ -331,7 +333,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"question", emoji:"❓", name:"Вопрос (шаблон)", ru:"Вопрос", tagCat:"Вопрос", folder: KR("Questions"),
+    { key:"question", emoji:"❓", name:"Вопрос (шаблон)", ru:"Вопрос", tagCat:"Вопрос", folder: KR("54_Research/54.1_Questions"),
       skeleton:[
         "## ❓ Вопрос",
         "",
@@ -343,7 +345,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"prompt", emoji:"🤖", name:"Prompt (шаблон)", ru:"Prompt", tagCat:"Prompt", folder: KR("Prompts"),
+    { key:"prompt", emoji:"🤖", name:"Prompt (шаблон)", ru:"Prompt", tagCat:"Prompt", folder: KR("54_Research/54.3_Prompts"),
       skeleton:[
         "## 🤖 Задача для ИИ",
         "- ",
@@ -355,7 +357,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"tool", emoji:"🛠️", name:"Инструмент", ru:"Инструмент", tagCat:"Инструмент", folder: KR("Tools"),
+    { key:"tool", emoji:"🛠️", name:"Инструмент", ru:"Инструмент", tagCat:"Инструмент", folder: KR("54_Research/54.4_Tools"),
       skeleton:[
         "## 🧰 Описание",
         "- ",
@@ -368,7 +370,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"okr", emoji:"🎯", name:"OKR", ru:"OKR", tagCat:"OKR", folder: KR("OKR"),
+    { key:"okr", emoji:"🎯", name:"OKR", ru:"OKR", tagCat:"OKR", folder: KR("56_OKR"),
       skeleton:[
         "## 🎯 Objective",
         "- ",
@@ -393,7 +395,7 @@ if (choice === "knowledge") {
   const ts = tp.date.now("YYYYMMDDHHmm");
   const baseTitle = `${k.ru} — ${baseName} — ${ts}`;
 
-  await ensureFolder(k.folder);
+  await ensureFolderExists(k.folder);
   const unique = await ensureUniqueTitle(k.folder, baseTitle);
   try { await tp.file.rename(unique); } catch(e) {}
   try { await tp.file.move(`${k.folder}/${unique}`); } catch(e) {}
@@ -415,10 +417,10 @@ if (choice === "knowledge") {
 // ---------- QUICK ----------
 else if (choice === "quick") {
   const baseTitle = `Быстрая задача ${nowDate} ${nowTimeSafe}`;
-  // Для быстрых задач проверим уникальность в текущей папке
-  const folder = tp.file.folder(true); // absolute path relative to vault
+  const folder = "15_Journal/15.1_Tasks/15.1.1_Quick";
+  await ensureFolderExists(folder);
   finalTitle = await ensureUniqueTitle(folder, baseTitle);
-  try { await tp.file.rename(finalTitle); } catch(e) {}
+  await tp.file.move(`${folder}/${finalTitle}.md`);
   H1 = `# ${finalTitle}`;
   fm.title = finalTitle;
   fm.type = "task";
@@ -666,12 +668,13 @@ else if (choice === "money") {
 // ---------- DELEGATE ----------
 else if (choice === "delegate") {
   const baseTitle = `Делегирование ${nowDate} ${nowTimeSafe}`;
-  const folder = tp.file.folder(true);
+  const folder = "15_Journal/15.1_Tasks/15.1.2_Delegated";
+  await ensureFolderExists(folder);
   finalTitle = await ensureUniqueTitle(folder, baseTitle);
-  try { await tp.file.rename(finalTitle); } catch(e) {}
+  await tp.file.move(`${folder}/${finalTitle}.md`);
   H1 = `# ${finalTitle}`;
   fm.title = finalTitle;
-  fm.type = "delegate";
+  fm.type = "task";
   fm.tags = ["t/delegate"];
 
   const task = await tp.system.prompt("Что делегировать?", "");
