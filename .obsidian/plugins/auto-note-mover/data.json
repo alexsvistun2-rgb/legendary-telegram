@@ -4,23 +4,63 @@
   "statusBar_trigger_indicator": true,
   "folder_tag_pattern": [
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Purchase",
-      "tag": "#type/purchase",
+      "folder": "11_Journal/11.1_Tasks/11.1.1_Quick",
+      "tag": "#t/quick",
+      "pattern": ""
+    },
+    {
+      "folder": "11_Journal/11.1_Tasks/11.1.2_Delegation",
+      "tag": "#t/delegate",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/31_Habits",
+      "tag": "#habit",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Media/42.1_Music",
+      "tag": "#media/music",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Media/42.2_Films",
+      "tag": "#media/film",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Media/42.3_Series",
+      "tag": "#media/series",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Media/42.4_Playlists",
+      "tag": "#media/playlist",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/43_Library/43.2_Notes",
+      "tag": "#library",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/59_Inbox/59.1_ZK",
+      "tag": "#knowledge",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Dividend",
+      "tag": "#type/dividend",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Fee",
+      "tag": "#type/fee",
       "pattern": ""
     },
     {
       "folder": "60_Finance/69_Inbox/69.1_Finance_note/Income",
       "tag": "#type/income",
-      "pattern": ""
-    },
-    {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Transfer",
-      "tag": "#type/transfer",
-      "pattern": ""
-    },
-    {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Savings",
-      "tag": "#type/savings",
       "pattern": ""
     },
     {
@@ -34,8 +74,23 @@
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Dividend",
-      "tag": "#type/dividend",
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Other",
+      "tag": "#type/other",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Purchase",
+      "tag": "#type/purchase",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Refund",
+      "tag": "#type/refund",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Savings",
+      "tag": "#type/savings",
       "pattern": ""
     },
     {
@@ -44,13 +99,28 @@
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Fee",
-      "tag": "#type/fee",
+      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Transfer",
+      "tag": "#type/transfer",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Refund",
-      "tag": "#type/refund",
+      "folder": "70_Health/70.1_Records",
+      "tag": "#health/record",
+      "pattern": ""
+    },
+    {
+      "folder": "70_Health/70.2_Fitness/70.2.1_Runs",
+      "tag": "#fitness/run",
+      "pattern": ""
+    },
+    {
+      "folder": "70_Health/70.2_Fitness/70.2.2_Workouts",
+      "tag": "#fitness/workout",
+      "pattern": ""
+    },
+    {
+      "folder": "75_Documents/75.1_Personal_ID",
+      "tag": "#docs/id",
       "pattern": ""
     }
   ],

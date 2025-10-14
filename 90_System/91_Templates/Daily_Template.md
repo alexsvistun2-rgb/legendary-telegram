@@ -60,8 +60,30 @@ const nowTimeSafe = tp.date.now("HH-mm"); // Windows-safe, minutes granularity
 
 // ---------- Main choice ----------
 const choice = await tp.system.suggester(
-  ["⚡ Быстрая задача","💵 Деньги","🤝 Делегировать","📚 Знания"],
-  ["quick","money","delegate","knowledge"],
+  [
+    "⚡ Быстрая задача",
+    "💵 Деньги",
+    "🤝 Делегировать",
+    "📚 Знания",
+    "🏃 Тренировка",
+    "🧪 Анализы",
+    "🎧 Медиа",
+    "📘 Библиотека",
+    "📁 Документ",
+    "📊 Привычка"
+  ],
+  [
+    "quick",
+    "money",
+    "delegate",
+    "knowledge",
+    "workout",
+    "health_record",
+    "media",
+    "library",
+    "document",
+    "habit"
+  ],
   false,
   "Что создать?"
 );
@@ -75,6 +97,21 @@ let knowledgeCategory = null;
 
 // Frontmatter to render
 let fm = { title: "", type: "", tags: [] };
+let fmExtra = [];
+const addFm = (key, value) => {
+  if (value === undefined || value === null || value === '') return;
+  if (typeof value === 'number' && !Number.isNaN(value)) {
+    fmExtra.push(`${key}: ${value}`);
+  } else if (typeof value === 'boolean') {
+    fmExtra.push(`${key}: ${value}`);
+  } else {
+    fmExtra.push(`${key}: ${JSON.stringify(String(value))}`);
+  }
+};
+const sanitizeTitle = (value, fallback = 'Заметка') => {
+  const base = (value && String(value).trim()) || fallback;
+  return base.replace(/[\\/:?<>*"|]/g, ' ').replace(/\s+/g, ' ').trim();
+};
 
 // ---------- KNOWLEDGE ----------
 if (choice === "knowledge") {
@@ -704,15 +741,363 @@ else if (choice === "delegate") {
   ].join("\n");
 }
 
+
+// ---------- WORKOUT ----------
+else if (choice === "workout") {
+  const workoutType = await tp.system.suggester(
+    ["🏃 Бег","🏋️ Силовая","🚴 Велотренировка","🧘 Йога/мобилити"],
+    ["run","strength","bike","mobility"],
+    false,
+    "Тип тренировки"
+  );
+  const date = await tp.system.prompt("Дата тренировки", tp.date.now("YYYY-MM-DD"));
+  const startTime = await tp.system.prompt("Время начала (опц.)", tp.date.now("HH:mm"));
+  const durationRaw = await tp.system.prompt("Длительность (мин)", "45");
+  const durationVal = durationRaw ? Number(cleanAmount(durationRaw)) : null;
+  let distanceRaw = "";
+  if (workoutType === "run" || workoutType === "bike") {
+    distanceRaw = await tp.system.prompt("Дистанция (км)", "");
+  }
+  const distanceVal = distanceRaw ? Number(cleanAmount(distanceRaw)) : null;
+  const hr = await tp.system.prompt("Средний пульс (опц.)", "");
+  const rpe = await tp.system.prompt("RPE (1-10)", "");
+  const notes = await tp.system.prompt("Ключевые заметки", "");
+  const labelMap = { run: "Пробежка", strength: "Силовая тренировка", bike: "Велотренировка", mobility: "Мобилити" };
+  const safeLabel = sanitizeTitle(labelMap[workoutType] || "Тренировка");
+  const baseTitle = `${safeLabel} ${date}`.trim();
+  finalTitle = await ensureUniqueTitle(tp.file.folder(true), baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  H1 = `# ${finalTitle}`;
+  fm.title = finalTitle;
+  fm.type = "workout";
+  const tagMap = { run: "fitness/run", strength: "fitness/workout", bike: "fitness/workout", mobility: "fitness/workout" };
+  fm.tags = ["fitness", tagMap[workoutType] || "fitness/workout"];
+  addFm("date", date);
+  addFm("workout_type", workoutType);
+  if (durationVal !== null && !Number.isNaN(durationVal)) addFm("duration_min", durationVal);
+  if (distanceVal !== null && !Number.isNaN(distanceVal)) addFm("distance_km", distanceVal);
+  if (hr) addFm("hr_avg", Number(cleanAmount(hr)));
+  if (rpe) addFm("rpe", Number(cleanAmount(rpe)));
+  const durationDisplay = (durationVal !== null && !Number.isNaN(durationVal)) ? durationVal : "—";
+  const distanceDisplay = (distanceVal !== null && !Number.isNaN(distanceVal)) ? distanceVal : "—";
+  const metrics = [
+    `- Дата: **${date}${startTime ? " " + startTime : ""}**`,
+    `- Формат: **${labelMap[workoutType] || "Тренировка"}**`,
+    `- Длительность: **${durationDisplay} мин**`,
+  ];
+  if (distanceRaw) metrics.push(`- Дистанция: **${distanceDisplay} км**`);
+  if (hr) metrics.push(`- Средний пульс: **${hr} уд/мин**`);
+  if (rpe) metrics.push(`- RPE: **${rpe}/10**`);
+  body += [
+    "## 🏃 Тренировка",
+    ...metrics,
+    "",
+    "### 📓 Лог тренировки",
+    "<!-- tracker:workout-log -->",
+    "| Дата | Минуты | Дистанция | RPE | Пульс | Комментарий |",
+    "| --- | --- | --- | --- | --- | --- |",
+    `| ${date} | ${durationDisplay} | ${distanceRaw || '—'} | ${rpe || '—'} | ${hr || '—'} | ${notes || '—'} |`,
+    "",
+    "```tracker",
+    "searchType: table",
+    "tableId: workout-log",
+    "line:",
+    "  title: Нагрузка (мин)",
+    "  dataset: Минуты",
+    "summary:",
+    "  - type: sum",
+    "    label: Минут за период",
+    "    column: Минуты",
+    "  - type: sum",
+    "    label: Км за период",
+    "    column: Дистанция",
+    "```",
+    "",
+    "> [!tip] Tracker\n> Добавляй строки в таблицу выше — график и суммы обновятся автоматически.",
+    ""
+  ].join("
+");
+}
+
+// ---------- HEALTH RECORD ----------
+else if (choice === "health_record") {
+  const scope = await tp.system.prompt("Название анализа/осмотра", "");
+  const date = await tp.system.prompt("Дата", tp.date.now("YYYY-MM-DD"));
+  const clinic = await tp.system.prompt("Клиника/лаборатория", "");
+  const doctor = await tp.system.prompt("Врач (опц.)", "");
+  const summary = await tp.system.prompt("Основные выводы (опц.)", "");
+  const nextSteps = await tp.system.prompt("Следующие шаги (опц.)", "");
+  const safeScope = sanitizeTitle(scope, "Анализ");
+  const baseTitle = `${safeScope} ${date}`.trim();
+  finalTitle = await ensureUniqueTitle(tp.file.folder(true), baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  H1 = `# ${finalTitle}`;
+  fm.title = finalTitle;
+  fm.type = "health_record";
+  fm.tags = ["health/record"];
+  addFm("date", date);
+  addFm("scope", scope || safeScope);
+  addFm("clinic", clinic);
+  if (doctor) addFm("doctor", doctor);
+  body += [
+    "## 🧪 Анализ / обследование",
+    `- Название: **${md(scope || safeScope)}**`,
+    `- Дата: **${date}**`,
+    `- Локация: **${md(clinic || '—')}**`,
+    `- Врач: **${md(doctor || '—')}**`,
+    "",
+    "### 📊 Показатели",
+    "| Показатель | Значение | Норма | Комментарий |",
+    "| --- | --- | --- | --- |",
+    "| | | | |",
+    "",
+    "### 📝 Выводы",
+    summary ? md(summary) : "—",
+    "",
+    "### ▶️ Следующие шаги",
+    nextSteps ? md(nextSteps) : "—",
+    ""
+  ].join("
+");
+}
+
+// ---------- MEDIA ----------
+else if (choice === "media") {
+  const mediaType = await tp.system.suggester(
+    ["🎵 Музыка","🎬 Фильм","📺 Сериал","🎧 Плейлист"],
+    ["music","film","series","playlist"],
+    false,
+    "Тип медиа"
+  );
+  const title = await tp.system.prompt("Название", "");
+  const labelMap = { music: "Музыка", film: "Фильм", series: "Сериал", playlist: "Плейлист" };
+  const roleMap = { music: "Исполнитель/группа", film: "Режиссёр/студия", series: "Шоураннер/студия", playlist: "Автор плейлиста" };
+  const creator = await tp.system.prompt(roleMap[mediaType] || "Автор", "");
+  const release = await tp.system.prompt("Год релиза", "");
+  const rating = await tp.system.prompt("Оценка (например 8/10)", "");
+  const mood = await tp.system.prompt("Жанр/настроение", "");
+  const link = await tp.system.prompt("Основная ссылка (Spotify/Кинопоиск/...)", "");
+  const cover = await tp.system.prompt("Обложка (файл или URL)", "");
+  const review = await tp.system.prompt("Короткое впечатление", "");
+  const safeName = sanitizeTitle(title, "Медиа");
+  const baseTitle = `${safeName} — ${labelMap[mediaType] || 'Медиа'}`;
+  finalTitle = await ensureUniqueTitle(tp.file.folder(true), baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  H1 = `# ${title || finalTitle}`;
+  fm.title = title || finalTitle;
+  fm.type = "media";
+  const tagMap = { music: "media/music", film: "media/film", series: "media/series", playlist: "media/playlist" };
+  fm.tags = ["media", tagMap[mediaType] || "media/item"];
+  addFm("media_type", mediaType);
+  addFm("creator", creator);
+  addFm("release", release);
+  addFm("rating", rating);
+  if (link) addFm("link", link);
+  if (cover) addFm("cover", cover);
+  if (mood) addFm("mood", mood);
+  body += [
+    "> [!info] Карточка",
+    `> **Тип:** ${labelMap[mediaType] || 'Медиа'}`,
+    `> **Автор:** ${md(creator || '—')}`,
+    `> **Год:** ${release || '—'}`,
+    `> **Оценка:** ${rating || '—'}`,
+    `> **Настроение:** ${md(mood || '—')}`,
+    `> **Ссылка:** ${link ? `[перейти](${link})` : '—'}`,
+    `> **Обложка:** ${cover || '—'}`,
+    "",
+    "## 💽 Обзор",
+    review || "—",
+    "",
+    "## 🎯 Любимые моменты",
+    "- ",
+    "- ",
+    "",
+    "## 📓 Заметки",
+    "- ",
+    "- ",
+    "",
+    "## 🎵 Плейлист / треклист",
+    "- ",
+    "- ",
+    ""
+  ].join("
+");
+}
+
+// ---------- LIBRARY ----------
+else if (choice === "library") {
+  const material = await tp.system.prompt("Название книги/материала", "");
+  const author = await tp.system.prompt("Автор/источник", "");
+  const status = await tp.system.suggester(
+    ["🟢 Читаю","✅ Прочитано","📝 Планирую","⏸️ Пауза"],
+    ["reading","finished","planned","paused"],
+    false,
+    "Статус"
+  );
+  const progressRaw = await tp.system.prompt("Прогресс (%)", "");
+  const progressVal = progressRaw ? Number(cleanAmount(progressRaw)) : null;
+  const safeName = sanitizeTitle(material, "Материал");
+  const baseTitle = `${safeName} — конспект`;
+  finalTitle = await ensureUniqueTitle(tp.file.folder(true), baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  H1 = `# ${material || finalTitle}`;
+  fm.title = material || finalTitle;
+  fm.type = "library";
+  fm.tags = ["library"];
+  addFm("source", material || finalTitle);
+  addFm("author", author);
+  addFm("status", status);
+  if (progressVal !== null && !Number.isNaN(progressVal)) addFm("progress", progressVal);
+  body += [
+    "## 📘 Карточка материала",
+    `- Название: **${md(material || finalTitle)}**`,
+    `- Автор: **${md(author || '—')}**`,
+    `- Статус: **${status || '—'}**`,
+    progressVal !== null && !Number.isNaN(progressVal) ? `- Прогресс: **${progressVal}%**` : "- Прогресс: **—**",
+    "",
+    "## 🧠 Ключевые идеи",
+    "- ",
+    "- ",
+    "",
+    "## 💬 Цитаты",
+    "- ",
+    "- ",
+    "",
+    "## ✏️ Конспект",
+    "",
+    "",
+    "## 🔗 Связи и ссылки",
+    "- ",
+    ""
+  ].join("
+");
+}
+
+// ---------- DOCUMENT ----------
+else if (choice === "document") {
+  const docType = await tp.system.prompt("Тип документа", "Паспорт");
+  const owner = await tp.system.prompt("Владелец", "");
+  const issued = await tp.system.prompt("Дата выдачи", tp.date.now("YYYY-MM-DD"));
+  const expires = await tp.system.prompt("Дата окончания (опц.)", "");
+  const storage = await tp.system.prompt("Где хранится оригинал", "");
+  const noteDoc = await tp.system.prompt("Заметки/особенности", "");
+  const safeDoc = sanitizeTitle(docType, "Документ");
+  const safeOwner = sanitizeTitle(owner, nowDate);
+  const baseTitle = `${safeDoc} — ${safeOwner}`.trim();
+  finalTitle = await ensureUniqueTitle(tp.file.folder(true), baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  H1 = `# ${finalTitle}`;
+  fm.title = finalTitle;
+  fm.type = "document";
+  fm.tags = ["docs/id"];
+  addFm("doc_type", docType || safeDoc);
+  addFm("owner", owner || safeOwner);
+  addFm("issued", issued);
+  if (expires) addFm("expires", expires);
+  if (storage) addFm("storage", storage);
+  addFm("sensitive", true);
+  body += [
+    "## 📁 Документ",
+    `- Тип: **${md(docType || safeDoc)}**`,
+    `- Владелец: **${md(owner || safeOwner)}**`,
+    `- Дата выдачи: **${issued || '—'}**`,
+    `- Действителен до: **${expires || '—'}**`,
+    `- Где хранится: **${md(storage || '—')}**`,
+    "",
+    "### 📝 Заметки",
+    noteDoc ? md(noteDoc) : "—",
+    "",
+    "### 📎 Файлы",
+    "- Вложи скан документа сюда.",
+    ""
+  ].join("
+");
+}
+
+// ---------- HABIT ----------
+else if (choice === "habit") {
+  const habitName = await tp.system.prompt("Название привычки", "");
+  const frequency = await tp.system.suggester(
+    ["Ежедневно","Еженедельно","Ежемесячно"],
+    ["daily","weekly","monthly"],
+    false,
+    "Частота контроля"
+  );
+  const metric = await tp.system.suggester(
+    ["☑️ Да/нет","🔢 Количественная"],
+    ["boolean","number"],
+    false,
+    "Тип учёта"
+  );
+  const target = await tp.system.prompt(metric === "number" ? "Целевое значение за период" : "Целевых выполнений за период", "");
+  const startDate = await tp.system.prompt("Дата старта", tp.date.now("YYYY-MM-DD"));
+  const safeHabit = sanitizeTitle(habitName, "Привычка");
+  const baseTitle = `Привычка — ${safeHabit}`;
+  finalTitle = await ensureUniqueTitle(tp.file.folder(true), baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(e) {}
+  H1 = `# ${habitName || safeHabit}`;
+  fm.title = habitName || safeHabit;
+  fm.type = "habit";
+  fm.tags = ["habit"];
+  addFm("habit", habitName || safeHabit);
+  addFm("frequency", frequency);
+  addFm("metric", metric);
+  if (target) {
+    const targetVal = Number(cleanAmount(target));
+    if (!Number.isNaN(targetVal)) addFm("target", targetVal);
+  }
+  addFm("tracker_start", startDate);
+  const trackerColumn = metric === "number" ? "Значение" : "Выполнено";
+  const trackerSummaryType = metric === "number" ? "sum" : "count";
+  const trackerSummaryLabel = metric === "number" ? "Сумма" : "Количество выполнений";
+  const trackerTable = metric === "number"
+    ? `| Дата | Значение | Комментарий |
+| --- | --- | --- |
+| ${startDate} | 1 | Стартовая запись |`
+    : `| Дата | Выполнено | Комментарий |
+| --- | --- | --- |
+| ${startDate} | 1 | Стартовая запись |`;
+  body += [
+    "## 🎯 Цель",
+    `- Привычка: **${md(habitName || safeHabit)}**`,
+    `- Частота: **${frequency || '—'}**`,
+    `- Тип учёта: **${metric === 'number' ? 'Количественный' : 'Бинарный'}**`,
+    target ? `- Цель: **${target}**` : "- Цель: **—**",
+    `- Старт: **${startDate}**`,
+    "",
+    "### 📊 Трекер",
+    "```tracker",
+    "searchType: table",
+    "tableId: habit-log",
+    "line:",
+    `  title: ${habitName || 'Привычка'}`,
+    `  dataset: ${trackerColumn}`,
+    "summary:",
+    `  - type: ${trackerSummaryType}`,
+    `    label: ${trackerSummaryLabel}`,
+    `    column: ${trackerColumn}`,
+    "```",
+    "",
+    "<!-- tracker:habit-log -->",
+    trackerTable,
+    "",
+    "> [!tip] Ведение привычки
+> Добавляй новые строки в таблицу выше, чтобы графики обновлялись автоматически.",
+    ""
+  ].join("
+");
+}
+
 // ---------- Compose Frontmatter + Header (with visible tags) ----------
-const fmLines = [
+const fmLinesArr = [
   "---",
   `title: ${fm.title ? '"' + fm.title.replace(/"/g,'\\"') + '"' : '""'}`,
   `type: ${fm.type || ""}`,
   `tags: [${Array.from(new Set(fm.tags)).join(', ')}]`,
-  "---",
-  ""
-].join("\n");
+];
+if (fmExtra.length) fmLinesArr.push(...fmExtra);
+fmLinesArr.push("---", "");
+const fmLines = fmLinesArr.join("\n");
 
 // Visible header under H1: Last edit + TAGS block
 const headerMeta = (() => {
