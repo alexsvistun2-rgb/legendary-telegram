@@ -30,5 +30,9 @@
   "quickadd",
   "multi-column-markdown",
   "omnisearch",
-  "obsidian-day-planner"
+  "obsidian-day-planner",
+  "obsidian-tracker",
+  "obsidian-habit-tracker",
+  "obsidian-pomodoro",
+  "obsidian-gallery"
 ]
