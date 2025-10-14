@@ -8,62 +8,7 @@ cssClass: dashboard
 
 ## 0) Служебные скрипты (Chart.js, плагины, Tabulator, helper)
 ```dataviewjs
-(async function(){
-  async function loadOnce(url, check){
-    if (check && check()) return;
-    await new Promise((res, rej) => {
-      const s = document.createElement('script');
-      s.src = url; s.async = true;
-      s.onload = res; s.onerror = () => rej(new Error('Cannot load '+url));
-      document.head.appendChild(s);
-    });
-  }
-  async function loadStyle(url){
-    if ([...document.styleSheets].some(x => x.href && x.href.includes(url))) return;
-    const l = document.createElement('link'); l.rel='stylesheet'; l.href=url; document.head.appendChild(l);
-    await new Promise(res => l.onload = res);
-  }
-  if (!window.financeBootstrap){
-    window.financeBootstrap = (async () => {
-      await loadOnce('https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js', () => window.Chart);
-      await loadOnce('https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@3.0.0/dist/chartjs-chart-matrix.min.js', () => window.Chart?.registry?.controllers?.matrix);
-      await loadOnce('https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.0/dist/chartjs-chart-treemap.min.js', () => window.Chart?.registry?.controllers?.treemap);
-      await loadOnce('https://cdn.jsdelivr.net/npm/chartjs-chart-hierarchy@2.0.1/dist/chartjs-chart-hierarchy.min.js', () => window.Chart?.overrides?.sunburst);
-      await loadOnce('https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.14.0/dist/chartjs-chart-sankey.min.js', () => window.Chart?.registry?.controllers?.sankey);
-      await loadOnce('https://cdn.jsdelivr.net/npm/chartjs-adapter-moment@1.0.1/dist/chartjs-adapter-moment.min.js', () => window.Chart?.adapters?.date?.formats);
-      await loadOnce('https://cdn.jsdelivr.net/npm/tabulator-tables@5.6.2/dist/js/tabulator.min.js', () => window.Tabulator);
-      await loadStyle('https://cdn.jsdelivr.net/npm/tabulator-tables@5.6.2/dist/css/tabulator_midnight.min.css');
-      window.financeIN = /^(income|refund|dividend|invest_sell)$/;
-      window.financeOut = /^(expense|transfer|sinking|invest_buy|tax|fee|other)$/;
-      window.financeColor = function(idx, alpha=.75){
-        const colors = ['#16a085','#2980b9','#8e44ad','#c0392b','#d35400','#2c3e50','#27ae60','#f39c12','#7f8c8d','#e67e22','#9b59b6','#1abc9c'];
-        const base = colors[idx % colors.length];
-        return base.replace(')',`,${alpha})`).replace('rgb','rgba');
-      };
-      window.financeRenderChart = function(cfg, mount){
-        mount = mount || document.createElement('div');
-        mount.classList.add('finance-chart');
-        const canvas = document.createElement('canvas');
-        mount.innerHTML='';
-        mount.appendChild(canvas);
-        const ctx = canvas.getContext('2d');
-        cfg.options = cfg.options || {};
-        cfg.options.maintainAspectRatio = false;
-        cfg.options.responsive = true;
-        cfg.options.plugins = cfg.options.plugins || {};
-        cfg.options.plugins.legend = cfg.options.plugins.legend || {position:'bottom'};
-        if (mount.__chart){ mount.__chart.destroy(); }
-        mount.__chart = new Chart(ctx, cfg);
-        return mount;
-      };
-      window.financeListeners = window.financeListeners || [];
-      window.addEventListener('finance-range-changed', () => {
-        window.financeListeners.forEach(fn => { try { fn(); } catch(e) { console.warn(e); } });
-      });
-    });
-  }
-  await window.financeBootstrap();
-})();
+await dv.view('90_System/92_File/Views/finance-bootstrap');
 ```
 
 ## 1) Фильтр периода (ключ `finance_range2`)
@@ -77,7 +22,9 @@ cssClass: dashboard
     save(patch){
       const val = Object.assign(store.load(), patch||{});
       localStorage.setItem(KEY, JSON.stringify(val));
-      window.dispatchEvent(new CustomEvent('finance-range-changed'));
+      if (window.dispatchFinanceRangeChanged) {
+        window.dispatchFinanceRangeChanged();
+      }
     }
   };
   const cfg = store.load();
@@ -106,7 +53,8 @@ cssClass: dashboard
 
 ## 2) Провайдер данных (`window.financeRows()` + helpers)
 ```dataviewjs
-(()=>{
+(async ()=>{
+  await dv.view('90_System/92_File/Views/finance-bootstrap');
   function readConfig(){
     try { const raw = localStorage.getItem('finance_range2'); return raw?JSON.parse(raw):{mode:'month'}; } catch(_) { return {mode:'month'}; }
   }
@@ -176,7 +124,9 @@ cssClass: dashboard
   };
   window.financeRowsDetailed = window.financeRows;
   window.financeRegister = (fn) => {
-    if(typeof fn === 'function'){ window.financeListeners.push(fn); }
+    if(typeof fn === 'function' && !window.financeListeners.includes(fn)){
+      window.financeListeners.push(fn);
+    }
   };
 })();
 ```
@@ -184,7 +134,7 @@ cssClass: dashboard
 ## 3) Быстрый обзор
 ```dataviewjs
 (async function(){
-  await window.financeBootstrap();
+  await dv.view('90_System/92_File/Views/finance-bootstrap');
   const mount = dv.el('div','');
   mount.className = 'finance-summary-grid';
   async function render(){
@@ -231,7 +181,7 @@ cssClass: dashboard
 >> [!info] Net по дням + MA7/MA30
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount = dv.el('div','');
 >>   mount.style.height='320px';
 >>   async function render(){
@@ -269,7 +219,7 @@ cssClass: dashboard
 >> [!info] Доходы vs Расходы (месяцы)
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount=dv.el('div',''); mount.style.height='320px';
 >>   async function render(){
 >>     const rows=await window.financeRows();
@@ -299,7 +249,7 @@ cssClass: dashboard
 >> [!warning] Категории (donut)
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount=dv.el('div',''); mount.style.height='300px';
 >>   async function render(){
 >>     const rows=await window.financeRows();
@@ -319,7 +269,7 @@ cssClass: dashboard
 >> [!warning] Treemap (Категория → Подкатегория)
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount=dv.el('div',''); mount.style.height='300px';
 >>   async function render(){
 >>     const rows=await window.financeRows();
@@ -348,7 +298,7 @@ cssClass: dashboard
 >> [!success] Источники доходов
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount=dv.el('div',''); mount.style.height='280px';
 >>   async function render(){
 >>     const rows=await window.financeRows();
@@ -368,7 +318,7 @@ cssClass: dashboard
 >> [!success] Сальдо по месяцам
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount=dv.el('div',''); mount.style.height='280px';
 >>   async function render(){
 >>     const rows=await window.financeRows();
@@ -391,7 +341,7 @@ cssClass: dashboard
 ## 7) Накопления и цели
 ```dataviewjs
 (async function(){
-  await window.financeBootstrap();
+  await dv.view('90_System/92_File/Views/finance-bootstrap');
   const mount=dv.el('div','');
   mount.className='finance-savings-grid';
   async function render(){
@@ -439,7 +389,7 @@ cssClass: dashboard
 >> [!tip] Инвестиции по тикерам
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount=dv.el('div',''); mount.style.height='280px';
 >>   async function render(){
 >>     const rows=await window.financeRows();
@@ -465,7 +415,7 @@ cssClass: dashboard
 >> [!tip] Денежные потоки (Sankey)
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount=dv.el('div',''); mount.style.height='280px';
 >>   async function render(){
 >>     const rows=await window.financeRows();
@@ -491,7 +441,7 @@ cssClass: dashboard
 >> [!tip] Тепловая карта расходов (день недели × категория)
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount=dv.el('div',''); mount.style.height='320px';
 >>   async function render(){
 >>     const rows=await window.financeRows();
@@ -525,7 +475,7 @@ cssClass: dashboard
 >> [!tip] Расходы по счетам
 >> ```dataviewjs
 >> (async function(){
->>   await window.financeBootstrap();
+>>   await dv.view('90_System/92_File/Views/finance-bootstrap');
 >>   const mount=dv.el('div',''); mount.style.height='320px';
 >>   async function render(){
 >>     const rows=await window.financeRows();
@@ -548,7 +498,7 @@ cssClass: dashboard
 ## 9) Сводные таблицы
 ```dataviewjs
 (async function(){
-  await window.financeBootstrap();
+  await dv.view('90_System/92_File/Views/finance-bootstrap');
   const mount = dv.el('div','');
   mount.className='finance-table';
   async function render(){
@@ -569,11 +519,14 @@ cssClass: dashboard
       price: r.price||'',
       link: r.link
     }));
+    if (mount.__table) {
+      try { mount.__table.destroy(); } catch (e) { console.warn('[Finance Table]', e); }
+    }
     mount.innerHTML='';
     const table = document.createElement('div');
     mount.append(table);
     const Tab = window.Tabulator;
-    new Tab(table, {
+    mount.__table = new Tab(table, {
       data: tableData,
       layout: 'fitColumns',
       height: '520px',

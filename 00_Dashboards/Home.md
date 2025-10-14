@@ -26,7 +26,7 @@ cssClass: dashboard
 >> ```
 
 ## 🗂 Канбан (CardBoard GTD)
-> Открой доску **GTD** в CardBoard: Разобрать · To Do · Срочные · Делегировать · Проекты · Done. Для стиля включи сниппеты `card-board-elevated` и `dashboard-widgets`.
+> Открой доску **GTD** в CardBoard: Разобрать · To Do · Срочные · Делегировать · Проекты · Done. Для нового нео-глассморфного оформления включи сниппеты `card-board-elevated` и `dashboard-widgets`.
 
 ## 📅 Журнал & привычки
 > [!multi-column]
@@ -131,7 +131,9 @@ LIMIT 10
 
 ## 🔗 Навигация
 - [[00_Dashboards/Habits_Dashboard|🌿 Habits Dashboard]]
+- [[00_Dashboards/Health_Dashboard|🩺 Health Dashboard]]
 - [[00_Dashboards/💼 Finance — Единая доска (фильтр → графики → таблица)|💼 Finance Board]]
+- [[00_Dashboards/Media_Dashboard|🎶 Media Dashboard]]
 - [[30_Areas/34_Health/Health_Hub|🩺 Health Hub]]
 - [[40_Resources/43_Media/Media_Hub|🎬 Media Hub]]
 - [[40_Resources/42_Library/Library_Hub|📚 Library Hub]]

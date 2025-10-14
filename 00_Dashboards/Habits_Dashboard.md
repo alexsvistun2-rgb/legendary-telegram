@@ -75,14 +75,7 @@ dv.paragraph(`**${total}** помодоро · **${minutes}** минут сфо�
 ## 📈 Динамика привычек (Chart.js)
 ```dataviewjs
 (async function(){
-  if (window.financeBootstrap) {
-    await window.financeBootstrap();
-  }
-  if(!window.Chart){
-    const script=document.createElement('script');
-    script.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js';
-    await new Promise((res,rej)=>{script.onload=res;script.onerror=rej;document.head.appendChild(script);});
-  }
+  await dv.view('90_System/92_File/Views/chart-loader');
   const logs = dv.pages('30_Areas/35_Habits/35.1_Log').array();
   const grouped = {};
   logs.forEach(p => {
@@ -92,6 +85,10 @@ dv.paragraph(`**${total}** помодоро · **${minutes}** минут сфо�
     grouped[key][date]=(grouped[key][date]||0)+Number(p.count ?? 1);
   });
   const dates = Array.from(new Set(Object.values(grouped).flatMap(obj => Object.keys(obj)))).sort();
+  if (dates.length === 0) {
+    dv.paragraph('Добавь записи в журнал привычек, чтобы увидеть график.');
+    return;
+  }
   const datasets = Object.entries(grouped).map(([name,values],idx)=>({
     label:name,
     data:dates.map(d=>values[d]||0),
@@ -103,7 +100,10 @@ dv.paragraph(`**${total}** помодоро · **${minutes}** минут сфо�
   }));
   const mount = dv.el('div','');
   mount.style.height='320px';
-  new Chart(mount, { type:'line', data:{ labels:dates, datasets }, options:{ plugins:{ legend:{ position:'bottom' }}}});
+  const canvas = document.createElement('canvas');
+  mount.append(canvas);
+  const ctx = canvas.getContext('2d');
+  new Chart(ctx, { type:'line', data:{ labels:dates, datasets }, options:{ plugins:{ legend:{ position:'bottom' }}}});
 })();
 ```
 
