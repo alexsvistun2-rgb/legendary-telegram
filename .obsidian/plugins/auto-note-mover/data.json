@@ -4,60 +4,195 @@
   "statusBar_trigger_indicator": true,
   "folder_tag_pattern": [
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Purchase",
+      "folder": "30_Areas/31_Tasks/31.1_Journal",
+      "tag": "#type/task",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/31_Tasks/31.2_Delegation",
+      "tag": "#t/delegate",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/61_Journal/61.1_Expenses",
       "tag": "#type/purchase",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Income",
+      "folder": "60_Finance/61_Journal/61.1_Expenses",
+      "tag": "#type/expense",
+      "pattern": ""
+    },
+    {
+      "folder": "60_Finance/61_Journal/61.2_Income",
       "tag": "#type/income",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Transfer",
+      "folder": "60_Finance/61_Journal/61.3_Transfers",
       "tag": "#type/transfer",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Savings",
+      "folder": "60_Finance/61_Journal/61.5_Savings",
       "tag": "#type/savings",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Invest_Buy",
+      "folder": "60_Finance/61_Journal/61.4_Investments/Buy",
       "tag": "#type/invest_buy",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Invest_Sell",
+      "folder": "60_Finance/61_Journal/61.4_Investments/Sell",
       "tag": "#type/invest_sell",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Dividend",
+      "folder": "60_Finance/61_Journal/61.4_Investments/Dividends",
       "tag": "#type/dividend",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Tax",
+      "folder": "60_Finance/61_Journal/61.7_Taxes",
       "tag": "#type/tax",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Fee",
+      "folder": "60_Finance/61_Journal/61.8_Fees",
       "tag": "#type/fee",
       "pattern": ""
     },
     {
-      "folder": "60_Finance/69_Inbox/69.1_Finance_note/Refund",
+      "folder": "60_Finance/61_Journal/61.9_Refunds",
       "tag": "#type/refund",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.3_Fleeting",
+      "tag": "#note/fleeting",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent",
+      "tag": "#note/permanent",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.1_MOCs",
+      "tag": "#note/moc",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/43_Library/43.1_Books",
+      "tag": "#lib/book",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Media/42.1_Music",
+      "tag": "#media/music",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Media/42.2_Films",
+      "tag": "#media/movie",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Media/42.3_Series",
+      "tag": "#media/series",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Literature/Books",
+      "tag": "#note/book",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Literature/E-books",
+      "tag": "#note/book_ebook",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Literature/Quotes",
+      "tag": "#note/quote",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Literature/Terms",
+      "tag": "#note/term",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Core",
+      "tag": "#note/permanent",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.3_Fleeting/Inbox",
+      "tag": "#note/fleeting",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.1_MOCs/Areas",
+      "tag": "#note/moc",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.1_MOCs/People",
+      "tag": "#note/person",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Sources",
+      "tag": "#note/source",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Courses/Lectures",
+      "tag": "#note/lecture",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Courses/USMLE",
+      "tag": "#note/course",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.3_Fleeting/Questions",
+      "tag": "#note/question",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Prompts",
+      "tag": "#note/prompt",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/Tools",
+      "tag": "#note/tool",
+      "pattern": ""
+    },
+    {
+      "folder": "50_Knowledge/51_ZK/51.2_Permanent/OKR",
+      "tag": "#note/okr",
+      "pattern": ""
+    },
+    {
+      "folder": "40_Resources/42_Media/42.4_Playlists",
+      "tag": "#media/playlist",
+      "pattern": ""
+    },
+    {
+      "folder": "30_Areas/31_Tasks/31.1_Journal",
+      "tag": "#t/waiting",
       "pattern": ""
     }
   ],
   "use_regex_to_check_for_excluded_folder": false,
   "excluded_folder": [
     {
-      "folder": "00_Templates"
+      "folder": "90_System"
     }
   ]
 }

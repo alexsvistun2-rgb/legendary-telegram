@@ -8,7 +8,7 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "Разобрать",
+              "name": "📥 Inbox",
               "tag": "#t/triage"
             }
           },
@@ -16,7 +16,7 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "To Do",
+              "name": "🎯 Next",
               "tag": "#t/todo"
             }
           },
@@ -24,7 +24,7 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "Срочные",
+              "name": "🔥 Срочно",
               "tag": "#t/urgent"
             }
           },
@@ -32,7 +32,7 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "Делегировать",
+              "name": "🤝 Делегировать",
               "tag": "#t/delegate"
             }
           },
@@ -40,7 +40,15 @@
             "tag": "namedTag",
             "data": {
               "collapsed": false,
-              "name": "Проекты",
+              "name": "⏳ В ожидании",
+              "tag": "#t/waiting"
+            }
+          },
+          {
+            "tag": "namedTag",
+            "data": {
+              "collapsed": false,
+              "name": "🧠 Проекты",
               "tag": "#t/project"
             }
           },
@@ -48,9 +56,9 @@
             "tag": "completed",
             "data": {
               "collapsed": false,
-              "index": 5,
-              "limit": 100,
-              "name": "Done"
+              "index": 6,
+              "limit": 200,
+              "name": "✅ Done"
             }
           }
         ],
@@ -59,7 +67,7 @@
         "filterScope": "Both",
         "name": "GTD",
         "showColumnTags": true,
-        "showFilteredTags": true
+        "showFilteredTags": false
       }
     ],
     "globalSettings": {

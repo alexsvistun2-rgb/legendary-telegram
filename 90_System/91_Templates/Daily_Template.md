@@ -13,26 +13,46 @@ function cleanAmount(x){
 }
 
 function md(x){ // escape Markdown safely
-  const re = new RegExp('([\\\\*_`\\[\\]\\(\\)<>#+!|\\-])','g');
-  return String(x ?? "—").replace(re, "\\$1");
+  const re = new RegExp('([\\*_`\[\]\(\)<>#+!|\-])','g');
+  return String(x ?? "—").replace(re, "\$1");
+}
+
+async function ensureFolder(folderPath) {
+  const norm = String(folderPath || "").replace(/\\/g, "/");
+  if (!norm) return;
+  if (app.vault.getAbstractFileByPath(norm)) return;
+  const parts = norm.split("/");
+  let acc = "";
+  for (const p of parts) {
+    if (!p) continue;
+    acc = acc ? `${acc}/${p}` : p;
+    if (!app.vault.getAbstractFileByPath(acc)) {
+      try { await app.vault.createFolder(acc); } catch (_) {}
+    }
+  }
 }
 
 // Return folder path ANM will use for a given money type
 function targetFolderFor(type){
   const map = {
-    expense:    "60_Finance/69_Inbox/69.1_Finance_note/Purchase",
-    income:     "60_Finance/69_Inbox/69.1_Finance_note/Income",
-    transfer:   "60_Finance/69_Inbox/69.1_Finance_note/Transfer",
-    sinking:    "60_Finance/69_Inbox/69.1_Finance_note/Savings",
-    invest_buy: "60_Finance/69_Inbox/69.1_Finance_note/Invest_Buy",
-    invest_sell:"60_Finance/69_Inbox/69.1_Finance_note/Invest_Sell",
-    divint:     "60_Finance/69_Inbox/69.1_Finance_note/Dividend",
-    tax:        "60_Finance/69_Inbox/69.1_Finance_note/Tax",
-    fee:        "60_Finance/69_Inbox/69.1_Finance_note/Fee",
-    refund:     "60_Finance/69_Inbox/69.1_Finance_note/Refund",
-    other:      "60_Finance/69_Inbox/69.1_Finance_note/Other"
+    expense:    "60_Finance/61_Journal/61.1_Expenses",
+    income:     "60_Finance/61_Journal/61.2_Income",
+    transfer:   "60_Finance/61_Journal/61.3_Transfers",
+    sinking:    "60_Finance/61_Journal/61.5_Savings",
+    invest_buy: "60_Finance/61_Journal/61.4_Investments/Buy",
+    invest_sell:"60_Finance/61_Journal/61.4_Investments/Sell",
+    divint:     "60_Finance/61_Journal/61.4_Investments/Dividends",
+    tax:        "60_Finance/61_Journal/61.7_Taxes",
+    fee:        "60_Finance/61_Journal/61.8_Fees",
+    refund:     "60_Finance/61_Journal/61.9_Refunds",
+    other:      "60_Finance/61_Journal"
   };
   return map[type] || map.other;
+}
+
+function fmtCurrency(num){
+  try { return Number(num ?? 0).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+  catch(_) { return String(num ?? 0); }
 }
 
 // Ensure a unique title in a folder by appending (2), (3) if necessary
@@ -78,44 +98,32 @@ let fm = { title: "", type: "", tags: [] };
 
 // ---------- KNOWLEDGE ----------
 if (choice === "knowledge") {
-  // create folder tree if not exists
-  async function ensureFolder(folderPath) {
-    const norm = String(folderPath || "").replace(/\\/g, "/");
-    if (app.vault.getAbstractFileByPath(norm)) return;
-    const parts = norm.split("/");
-    let acc = "";
-    for (const p of parts) {
-      if (!p) continue;
-      acc = acc ? `${acc}/${p}` : p;
-      if (!app.vault.getAbstractFileByPath(acc)) {
-        try { await app.vault.createFolder(acc); } catch (e) {}
-      }
-    }
-  }
-  const ROOT = "50_Knowledge/59_Inbox/59.1_ZK";
+  const ROOT = "50_Knowledge/51_ZK";
+  const INBOX = "50_Knowledge/59_Inbox/59.1_ZK";
   const KR = (p) => `${ROOT}/${p}`;
+  const KI = (p) => `${INBOX}/${p}`;
 
-  // Map from item key to RU tag (second tag)
+  // Map from item key to system tag (second tag)
   const TAG = {
-    liter_book: "Книга",
-    ebook: "Книга",
-    liter_quote: "Цитата",
-    liter_term: "Термин",
-    permanent: "Заметка",
-    fleeting: "Мимолётная",
-    moc: "MOC",
-    author: "Автор",
-    source: "Источник",
-    lecture: "Лекция",
-    usmle: "USMLE",
-    question: "Вопрос",
-    prompt: "Prompt",
-    tool: "Инструмент",
-    okr: "OKR"
+    liter_book: "note/book",
+    ebook: "note/book_ebook",
+    liter_quote: "note/quote",
+    liter_term: "note/term",
+    permanent: "note/permanent",
+    fleeting: "note/fleeting",
+    moc: "note/moc",
+    author: "note/person",
+    source: "note/source",
+    lecture: "note/lecture",
+    usmle: "note/course",
+    question: "note/question",
+    prompt: "note/prompt",
+    tool: "note/tool",
+    okr: "note/okr"
   };
 
   const ITEMS = [
-    { key:"liter_book",  emoji:"📚", name:"Литература — Книга", ru:"Книга", tagCat:"Книга", folder: KR("Literature/Books"),
+    { key:"liter_book",  emoji:"📚", name:"Литература — Книга", ru:"Книга", tagCat:"Книга", folder: KR("51.2_Permanent/Literature/Books"),
       skeleton:[
         "## 📗 Название",
         "",
@@ -144,7 +152,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"ebook", emoji:"📘", name:"E-book заметка", ru:"Книга (e-book)", tagCat:"Книга", folder: KR("Literature/E-books"),
+    { key:"ebook", emoji:"📘", name:"E-book заметка", ru:"Книга (e-book)", tagCat:"Книга", folder: KR("51.2_Permanent/Literature/E-books"),
       skeleton:[
         "## 📗 Название",
         "",
@@ -170,7 +178,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"liter_quote", emoji:"📝", name:"Литература — Цитата", ru:"Цитата", tagCat:"Цитата", folder: KR("Literature/Quotes"),
+    { key:"liter_quote", emoji:"📝", name:"Литература — Цитата", ru:"Цитата", tagCat:"Цитата", folder: KR("51.2_Permanent/Literature/Quotes"),
       skeleton:[
         "## 💬 Цитата",
         "",
@@ -183,7 +191,7 @@ if (choice === "knowledge") {
         ""
       ].join("\n")
     },
-    { key:"liter_term", emoji:"🏷️", name:"Литература — Термин", ru:"Термин", tagCat:"Термин", folder: KR("Literature/Terms"),
+    { key:"liter_term", emoji:"🏷️", name:"Литература — Термин", ru:"Термин", tagCat:"Термин", folder: KR("51.2_Permanent/Literature/Terms"),
       skeleton:[
         "## 🏷️ Термин:",
         "",
@@ -201,7 +209,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"permanent", emoji:"🧠", name:"Заметка (перманентная)", ru:"Заметка", tagCat:"Заметка", folder: KR("Permanent"),
+    { key:"permanent", emoji:"🧠", name:"Заметка (перманентная)", ru:"Заметка", tagCat:"Заметка", folder: KR("51.2_Permanent/Core"),
       skeleton:[
         "## 🧠 Суть",
         "",
@@ -217,7 +225,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"fleeting", emoji:"💡", name:"Мимолётная", ru:"Мимолётная", tagCat:"Мимолётная", folder: KR("Fleeting"),
+    { key:"fleeting", emoji:"💡", name:"Мимолётная", ru:"Мимолётная", tagCat:"Мимолётная", folder: KR("51.3_Fleeting/Inbox"),
       skeleton:[
         "## 💡 Мысль",
         "",
@@ -232,7 +240,7 @@ if (choice === "knowledge") {
         ""
       ].join("\n")
     },
-    { key:"moc", emoji:"🧩", name:"Структура (MOC)", ru:"MOC", tagCat:"MOC", folder: KR("MOC"),
+    { key:"moc", emoji:"🧩", name:"Структура (MOC)", ru:"MOC", tagCat:"MOC", folder: KR("51.1_MOCs/Areas"),
       skeleton:[
         "## 🗺️ Обзор",
         "",
@@ -248,7 +256,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"author", emoji:"👤", name:"Автор/Личность", ru:"Автор/Личность", tagCat:"Автор", folder: KR("Authors"),
+    { key:"author", emoji:"👤", name:"Автор/Личность", ru:"Автор/Личность", tagCat:"Автор", folder: KR("51.1_MOCs/People"),
       skeleton:[
         "## 👤 Имя",
         "",
@@ -270,7 +278,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"source", emoji:"🔗", name:"Источник / Статья", ru:"Источник", tagCat:"Источник", folder: KR("Sources"),
+    { key:"source", emoji:"🔗", name:"Источник / Статья", ru:"Источник", tagCat:"Источник", folder: KR("51.2_Permanent/Sources"),
       skeleton:[
         "## 📑 Реквизиты",
         "- Автор: ",
@@ -285,7 +293,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"lecture", emoji:"🎓", name:"Лекция / Конспект", ru:"Лекция", tagCat:"Лекция", folder: KR("Lectures"),
+    { key:"lecture", emoji:"🎓", name:"Лекция / Конспект", ru:"Лекция", tagCat:"Лекция", folder: KR("51.2_Permanent/Courses/Lectures"),
       skeleton:[
         "## 🎓 Название лекции",
         "",
@@ -307,7 +315,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"usmle", emoji:"🩺", name:"USMLE — Тема", ru:"USMLE", tagCat:"USMLE", folder: KR("USMLE"),
+    { key:"usmle", emoji:"🩺", name:"USMLE — Тема", ru:"USMLE", tagCat:"USMLE", folder: KR("51.2_Permanent/Courses/USMLE"),
       skeleton:[
         "## 🩺 High-Yield",
         "- ",
@@ -331,7 +339,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"question", emoji:"❓", name:"Вопрос (шаблон)", ru:"Вопрос", tagCat:"Вопрос", folder: KR("Questions"),
+    { key:"question", emoji:"❓", name:"Вопрос (шаблон)", ru:"Вопрос", tagCat:"Вопрос", folder: KR("51.3_Fleeting/Questions"),
       skeleton:[
         "## ❓ Вопрос",
         "",
@@ -343,7 +351,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"prompt", emoji:"🤖", name:"Prompt (шаблон)", ru:"Prompt", tagCat:"Prompt", folder: KR("Prompts"),
+    { key:"prompt", emoji:"🤖", name:"Prompt (шаблон)", ru:"Prompt", tagCat:"Prompt", folder: KR("51.2_Permanent/Prompts"),
       skeleton:[
         "## 🤖 Задача для ИИ",
         "- ",
@@ -355,7 +363,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"tool", emoji:"🛠️", name:"Инструмент", ru:"Инструмент", tagCat:"Инструмент", folder: KR("Tools"),
+    { key:"tool", emoji:"🛠️", name:"Инструмент", ru:"Инструмент", tagCat:"Инструмент", folder: KR("51.2_Permanent/Tools"),
       skeleton:[
         "## 🧰 Описание",
         "- ",
@@ -368,7 +376,7 @@ if (choice === "knowledge") {
         "- "
       ].join("\n")
     },
-    { key:"okr", emoji:"🎯", name:"OKR", ru:"OKR", tagCat:"OKR", folder: KR("OKR"),
+    { key:"okr", emoji:"🎯", name:"OKR", ru:"OKR", tagCat:"OKR", folder: KR("51.2_Permanent/OKR"),
       skeleton:[
         "## 🎯 Objective",
         "- ",
@@ -401,7 +409,7 @@ if (choice === "knowledge") {
   H1 = ""; // без дубля заголовка
   fm.title = unique;
   fm.type  = "knowledge";
-  fm.tags  = ["knowledge", TAG[k.key] || k.tagCat]; // simplified tags
+  fm.tags  = ["knowledge", "type/knowledge", TAG[k.key] || k.tagCat];
 
   // body
   body += [
@@ -414,15 +422,17 @@ if (choice === "knowledge") {
 
 // ---------- QUICK ----------
 else if (choice === "quick") {
-  const baseTitle = `Быстрая задача ${nowDate} ${nowTimeSafe}`;
-  // Для быстрых задач проверим уникальность в текущей папке
-  const folder = tp.file.folder(true); // absolute path relative to vault
-  finalTitle = await ensureUniqueTitle(folder, baseTitle);
-  try { await tp.file.rename(finalTitle); } catch(e) {}
+  const targetFolder = "30_Areas/31_Tasks/31.1_Journal";
+  await ensureFolder(targetFolder);
+  const baseTitle = `Задача ${nowDate} ${nowTimeSafe}`;
+  finalTitle = await ensureUniqueTitle(targetFolder, baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(_) {}
+  try { await tp.file.move(`${targetFolder}/${finalTitle}`); } catch(_) {}
+
   H1 = `# ${finalTitle}`;
   fm.title = finalTitle;
   fm.type = "task";
-  fm.tags = ["t/quick"];
+  fm.tags = ["type/task", "t/quick"];
 
   const title = await tp.system.prompt("Текст задачи", "");
   const mode = await tp.system.suggester(
@@ -434,14 +444,28 @@ else if (choice === "quick") {
   const nowFull = tp.date.now("YYYY-MM-DD HH:mm");
 
   let when = "";
-  if (mode === "single") { const a = await tp.system.prompt("YYYY-MM-DD HH:mm (или YYYY-MM-DD)", nowFull); if (a) when = ` 📅 ${a}`; fm.tags.push("t/urgent"); }
-  else if (mode === "range")  { const a = await tp.system.prompt("Начало: YYYY-MM-DD HH:mm", nowFull); const b = await tp.system.prompt("Окончание: YYYY-MM-DD HH:mm", nowFull); if (a && b) when = ` 🛫 ${a} 📅 ${b}`; fm.tags.push("t/urgent"); }
-  else if (mode === "soon")   { fm.tags.push("t/todo"); }
-  else                        { fm.tags.push("t/triage"); }
+  let due = null;
+  if (mode === "single") {
+    const a = await tp.system.prompt("YYYY-MM-DD HH:mm (или YYYY-MM-DD)", nowFull);
+    if (a) { when = ` 📅 ${a}`; due = a; }
+    fm.tags.push("t/urgent");
+  } else if (mode === "range")  {
+    const a = await tp.system.prompt("Начало: YYYY-MM-DD HH:mm", nowFull);
+    const b = await tp.system.prompt("Окончание: YYYY-MM-DD HH:mm", nowFull);
+    if (a && b) { when = ` 🛫 ${a} 📅 ${b}`; fm.start = a; fm.due = b; }
+    fm.tags.push("t/urgent");
+  } else if (mode === "soon")   {
+    fm.tags.push("t/todo");
+  } else {
+    fm.tags.push("t/triage");
+  }
+  if (due && !fm.due) fm.due = due;
 
   body += [
     "## ✅ Входящие/быстрые",
     `- [ ] ${md(title || "—")}${when}`,
+    "",
+    visibleTagsLine(fm.tags) ? visibleTagsLine(fm.tags) : "#type/task",
     ""
   ].join("\n");
 }
@@ -495,184 +519,257 @@ else if (choice === "money") {
   const titleWord = H1map[moneyType] || "Деньги";
   const baseTitle = `${titleWord} ${nowDate} ${nowTimeSafe}`;
   const targetFolder = targetFolderFor(moneyType);
+  await ensureFolder(targetFolder);
   finalTitle = await ensureUniqueTitle(targetFolder, baseTitle);
 
-  try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.rename(finalTitle); } catch(_) {}
+  try { await tp.file.move(`${targetFolder}/${finalTitle}`); } catch(_) {}
   H1 = `# ${finalTitle}`;
   fm.title = finalTitle;
   fm.type = moneyType || "other";
-  fm.tags = [ TagMap[moneyType] || TagMap.other ];
+  const baseTag = TagMap[moneyType] || TagMap.other;
+  fm.tags = ["finance", "type/finance", baseTag];
+  fm.currency = fm.currency || "RUB";
 
   const ask = async (label, def="") => await tp.system.prompt(label, def);
 
   if (moneyType === "expense") {
-    const amount   = cleanAmount(await ask("Сумма ₽"));
+    const amount   = Number(cleanAmount(await ask("Сумма ₽"))) || 0;
     const category = await ask("Категория (еда/транспорт/аптека/...)");
     const descr    = await ask("Описание (опц.)");
     const account  = await ask("Счёт (нал/карта/банк/кошелёк)");
     const date     = await ask("Дата", tp.date.now("YYYY-MM-DD HH:mm"));
+    fm.amount = amount;
+    fm.category = category || "";
+    fm.account = account || "";
+    fm.note = descr || "";
+    fm.date = date;
+    fm.flow = "out";
     body += [
       "> [!done] 🧾 Операция записана — расход",
-      `- Сумма: **${amount} ₽**`,
+      `- Сумма: **${fmtCurrency(amount)} ₽**`,
       `- Категория: **${md(category || "-")}**`,
       `- Описание: **${md(descr || "-")}**`,
       `- Счёт: **${md(account || "-")}**`,
       `- Дата: **${date}**`,
       ""
-    ].join("\n");
+    ].join("
+");
   }
 
   if (moneyType === "income") {
-    const amount  = cleanAmount(await ask("Сумма ₽"));
+    const amount  = Number(cleanAmount(await ask("Сумма ₽"))) || 0;
     const src     = await ask("Источник");
     const account = await ask("На счёт");
     const descr   = await ask("Описание (опц.)");
     const date    = await ask("Дата", tp.date.now("YYYY-MM-DD HH:mm"));
+    fm.amount = amount;
+    fm.source = src || "";
+    fm.account = account || "";
+    fm.note = descr || "";
+    fm.date = date;
+    fm.flow = "in";
     body += [
       "> [!done] 💼 Операция записана — доход",
-      `- Сумма: **${amount} ₽**`,
+      `- Сумма: **${fmtCurrency(amount)} ₽**`,
       `- Источник: **${md(src || "-")}**`,
       `- На счёт: **${md(account || "-")}**`,
       `- Описание: **${md(descr || "-")}**`,
       `- Дата: **${date}**`,
       ""
-    ].join("\n");
+    ].join("
+");
   }
 
   if (moneyType === "transfer") {
-    const amount = cleanAmount(await ask("Сумма ₽"));
+    const amount = Number(cleanAmount(await ask("Сумма ₽"))) || 0;
     const from   = await ask("С какого счёта");
     const to     = await ask("На какой счёт");
     const descr  = await ask("Описание (опц.)");
     const date   = await ask("Дата", tp.date.now("YYYY-MM-DD HH:mm"));
+    fm.amount = amount;
+    fm.from = from || "";
+    fm.to = to || "";
+    fm.note = descr || "";
+    fm.date = date;
+    fm.flow = "transfer";
     body += [
       "> [!done] 🔁 Перевод между счетами",
-      `- Сумма: **${amount} ₽**`,
+      `- Сумма: **${fmtCurrency(amount)} ₽**`,
       `- Откуда: **${md(from || "-")}**`,
       `- Куда: **${md(to || "-")}**`,
       `- Описание: **${md(descr || "-")}**`,
       `- Дата: **${date}**`,
       ""
-    ].join("\n");
+    ].join("
+");
   }
 
   if (moneyType === "sinking") {
-    const amount  = cleanAmount(await ask("Сумма ₽"));
+    const amount  = Number(cleanAmount(await ask("Сумма ₽"))) || 0;
     const fund    = await ask("Цель/конверт");
     const account = await ask("Счёт");
     const descr   = await ask("Описание (опц.)");
     const date    = await ask("Дата", tp.date.now("YYYY-MM-DD HH:mm"));
+    fm.amount = amount;
+    fm.goal = fund || "";
+    fm.account = account || "";
+    fm.note = descr || "";
+    fm.date = date;
+    fm.flow = "savings";
     body += [
       "> [!done] 🎯 Сбережение (конверт)",
-      `- Сумма: **${amount} ₽**`,
+      `- Сумма: **${fmtCurrency(amount)} ₽**`,
       `- Цель: **${md(fund || "-")}**`,
       `- Счёт: **${md(account || "-")}**`,
       `- Описание: **${md(descr || "-")}**`,
       `- Дата: **${date}**`,
       ""
-    ].join("\n");
+    ].join("
+");
   }
 
   if (moneyType === "invest_buy" || moneyType === "invest_sell") {
     const side    = (moneyType==="invest_buy") ? "покупка" : "продажа";
-    const amount  = cleanAmount(await ask("Сумма сделки ₽"));
+    const amount  = Number(cleanAmount(await ask("Сумма сделки ₽"))) || 0;
     const ticker  = await ask("Тикер/актив");
-    const qty     = await ask("Кол-во (шт, опц.)");
-    const price   = await ask("Цена за ед. (опц.)");
+    const qtyRaw  = await ask("Кол-во (шт, опц.)");
+    const priceRaw= await ask("Цена за ед. (опц.)");
     const account = await ask("Брокерский счёт");
     const descr   = await ask("Описание (опц.)");
     const date    = await ask("Дата", tp.date.now("YYYY-MM-DD HH:mm"));
+    const qty     = qtyRaw ? Number(cleanAmount(qtyRaw)) : null;
+    const price   = priceRaw ? Number(cleanAmount(priceRaw)) : null;
+    fm.amount = amount;
+    fm.asset = ticker || "";
+    fm.quantity = qty;
+    fm.price = price;
+    fm.account = account || "";
+    fm.note = descr || "";
+    fm.date = date;
+    fm.flow = moneyType;
     body += [
       `> [!done] 📊 Инвестиция — ${side}`,
-      `- Сумма: **${amount} ₽**`,
+      `- Сумма: **${fmtCurrency(amount)} ₽**`,
       `- Актив: **${md(ticker || "-")}**`,
-      `- Кол-во/Цена: **${[qty,price].filter(Boolean).join(" x ") || "-" }**`,
+      `- Кол-во/Цена: **${[qtyRaw, priceRaw].filter(Boolean).join(" × ") || "-" }**`,
       `- Счёт: **${md(account || "-")}**`,
       `- Описание: **${md(descr || "-")}**`,
       `- Дата: **${date}**`,
       ""
-    ].join("\n");
+    ].join("
+");
   }
 
   if (moneyType === "divint") {
-    const amount  = cleanAmount(await ask("Сумма ₽"));
+    const amount  = Number(cleanAmount(await ask("Сумма ₽"))) || 0;
     const src     = await ask("Источник (тикер/счёт)");
     const account = await ask("На счёт");
     const descr   = await ask("Описание (опц.)");
     const date    = await ask("Дата", tp.date.now("YYYY-MM-DD HH:mm"));
+    fm.amount = amount;
+    fm.source = src || "";
+    fm.account = account || "";
+    fm.note = descr || "";
+    fm.date = date;
+    fm.flow = "dividend";
     body += [
       "> [!done] 💸 Дивиденд/процент",
-      `- Сумма: **${amount} ₽**`,
+      `- Сумма: **${fmtCurrency(amount)} ₽**`,
       `- Источник: **${md(src || "-")}**`,
       `- На счёт: **${md(account || "-")}**`,
       `- Описание: **${md(descr || "-")}**`,
       `- Дата: **${date}**`,
       ""
-    ].join("\n");
+    ].join("
+");
   }
 
   if (moneyType === "tax") {
-    const amount  = cleanAmount(await ask("Сумма налога ₽"));
+    const amount  = Number(cleanAmount(await ask("Сумма налога ₽"))) || 0;
     const kind    = await ask("Вид налога");
     const account = await ask("Счёт оплаты");
     const descr   = await ask("Описание (опц.)");
     const date    = await ask("Дата", tp.date.now("YYYY-MM-DD HH:mm"));
+    fm.amount = amount;
+    fm.category = kind || "";
+    fm.account = account || "";
+    fm.note = descr || "";
+    fm.date = date;
+    fm.flow = "tax";
     body += [
       "> [!done] 🧾 Налог",
-      `- Сумма: **${amount} ₽**`,
+      `- Сумма: **${fmtCurrency(amount)} ₽**`,
       `- Вид: **${md(kind || "-")}**`,
       `- Счёт: **${md(account || "-")}**`,
       `- Описание: **${md(descr || "-")}**`,
       `- Дата: **${date}**`,
       ""
-    ].join("\n");
+    ].join("
+");
   }
 
   if (moneyType === "fee") {
-    const amount  = cleanAmount(await ask("Сумма комиссии ₽"));
+    const amount  = Number(cleanAmount(await ask("Сумма комиссии ₽"))) || 0;
     const who     = await ask("Кто взял комиссию");
     const account = await ask("С какого счёта списано");
     const descr   = await ask("Описание (опц.)");
     const date    = await ask("Дата", tp.date.now("YYYY-MM-DD HH:mm"));
+    fm.amount = amount;
+    fm.source = who || "";
+    fm.account = account || "";
+    fm.note = descr || "";
+    fm.date = date;
+    fm.flow = "fee";
     body += [
       "> [!warn] 🏦 Комиссия",
-      `- Сумма: **${amount} ₽**`,
+      `- Сумма: **${fmtCurrency(amount)} ₽**`,
       `- Кто: **${md(who || "-")}**`,
       `- Счёт: **${md(account || "-")}**`,
       `- Описание: **${md(descr || "-")}**`,
       `- Дата: **${date}**`,
       ""
-    ].join("\n");
+    ].join("
+");
   }
 
   if (moneyType === "refund") {
-    const amount  = cleanAmount(await ask("Сумма возврата ₽"));
+    const amount  = Number(cleanAmount(await ask("Сумма возврата ₽"))) || 0;
     const reason  = await ask("Причина/за что");
     const account = await ask("На какой счёт пришло");
     const descr   = await ask("Описание (опц.)");
     const date    = await ask("Дата", tp.date.now("YYYY-MM-DD HH:mm"));
+    fm.amount = amount;
+    fm.category = reason || "";
+    fm.account = account || "";
+    fm.note = descr || "";
+    fm.date = date;
+    fm.flow = "refund";
     body += [
       "> [!success] ↩️ Возврат",
-      `- Сумма: **${amount} ₽**`,
+      `- Сумма: **${fmtCurrency(amount)} ₽**`,
       `- Причина: **${md(reason || "-")}**`,
       `- На счёт: **${md(account || "-")}**`,
       `- Описание: **${md(descr || "-")}**`,
       `- Дата: **${date}**`,
       ""
-    ].join("\n");
+    ].join("
+");
   }
 }
 
 // ---------- DELEGATE ----------
 else if (choice === "delegate") {
+  const targetFolder = "30_Areas/31_Tasks/31.2_Delegation";
+  await ensureFolder(targetFolder);
   const baseTitle = `Делегирование ${nowDate} ${nowTimeSafe}`;
-  const folder = tp.file.folder(true);
-  finalTitle = await ensureUniqueTitle(folder, baseTitle);
-  try { await tp.file.rename(finalTitle); } catch(e) {}
+  finalTitle = await ensureUniqueTitle(targetFolder, baseTitle);
+  try { await tp.file.rename(finalTitle); } catch(_) {}
+  try { await tp.file.move(`${targetFolder}/${finalTitle}`); } catch(_) {}
   H1 = `# ${finalTitle}`;
   fm.title = finalTitle;
   fm.type = "delegate";
-  fm.tags = ["t/delegate"];
+  fm.tags = ["type/task", "t/delegate"];
 
   const task = await tp.system.prompt("Что делегировать?", "");
   const to   = await tp.system.prompt("Кому?", "");
@@ -687,21 +784,30 @@ else if (choice === "delegate") {
   let ddl = "";
   if (mode === "single") {
     ddl = await tp.system.prompt("YYYY-MM-DD HH:mm (или YYYY-MM-DD)", tp.date.now("YYYY-MM-DD HH:mm"));
+    if (ddl) fm.due = ddl;
     fm.tags.push("t/urgent");
   } else if (mode === "range") {
     const a = await tp.system.prompt("Начало: YYYY-MM-DD HH:mm", tp.date.now("YYYY-MM-DD HH:mm"));
     const b = await tp.system.prompt("Окончание: YYYY-MM-DD HH:mm", tp.date.now("YYYY-MM-DD HH:mm"));
     ddl = (a && b) ? (a + " → " + b) : "";
+    if (a) fm.start = a;
+    if (b) fm.due = b;
     fm.tags.push("t/urgent");
   }
+
+  fm.assignee = to || "";
+  fm.request = task || "";
 
   const due = ddl ? " 📅 " + ddl : "";
 
   body += [
     "## 🤝 Делегировать",
     `- [ ] ${md(task)} → **${md(to)}**${due}`,
+    "",
+    visibleTagsLine(fm.tags) ? visibleTagsLine(fm.tags) : "#type/task",
     ""
-  ].join("\n");
+  ].join("
+");
 }
 
 // ---------- Compose Frontmatter + Header (with visible tags) ----------
