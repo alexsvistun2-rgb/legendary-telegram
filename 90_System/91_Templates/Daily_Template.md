@@ -35,6 +35,22 @@ function targetFolderFor(type){
   return map[type] || map.other;
 }
 
+// Ensure target folder exists (creates nested structure if needed)
+async function ensureFolder(folderPath) {
+  const norm = String(folderPath || "").replace(/\\/g, "/");
+  if (!norm) return;
+  if (app.vault.getAbstractFileByPath(norm)) return;
+  const parts = norm.split("/");
+  let acc = "";
+  for (const p of parts) {
+    if (!p) continue;
+    acc = acc ? `${acc}/${p}` : p;
+    if (!app.vault.getAbstractFileByPath(acc)) {
+      try { await app.vault.createFolder(acc); } catch (e) {}
+    }
+  }
+}
+
 // Ensure a unique title in a folder by appending (2), (3) if necessary
 async function ensureUniqueTitle(folderPath, baseTitle){
   let n = 1;
@@ -78,20 +94,6 @@ let fm = { title: "", type: "", tags: [] };
 
 // ---------- KNOWLEDGE ----------
 if (choice === "knowledge") {
-  // create folder tree if not exists
-  async function ensureFolder(folderPath) {
-    const norm = String(folderPath || "").replace(/\\/g, "/");
-    if (app.vault.getAbstractFileByPath(norm)) return;
-    const parts = norm.split("/");
-    let acc = "";
-    for (const p of parts) {
-      if (!p) continue;
-      acc = acc ? `${acc}/${p}` : p;
-      if (!app.vault.getAbstractFileByPath(acc)) {
-        try { await app.vault.createFolder(acc); } catch (e) {}
-      }
-    }
-  }
   const ROOT = "50_Knowledge/59_Inbox/59.1_ZK";
   const KR = (p) => `${ROOT}/${p}`;
 
@@ -495,9 +497,11 @@ else if (choice === "money") {
   const titleWord = H1map[moneyType] || "Деньги";
   const baseTitle = `${titleWord} ${nowDate} ${nowTimeSafe}`;
   const targetFolder = targetFolderFor(moneyType);
+  await ensureFolder(targetFolder);
   finalTitle = await ensureUniqueTitle(targetFolder, baseTitle);
 
   try { await tp.file.rename(finalTitle); } catch(e) {}
+  try { await tp.file.move(`${targetFolder}/${finalTitle}.md`); } catch(e) {}
   H1 = `# ${finalTitle}`;
   fm.title = finalTitle;
   fm.type = moneyType || "other";
